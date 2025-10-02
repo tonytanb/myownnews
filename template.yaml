@@ -1,0 +1,83 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: MyOwnNews MVP — RSS -> LLM script -> Polly MP3 -> S3
+
+Parameters:
+  ModelId:
+    Type: String
+    Default: amazon.titan-text-lite-v1
+    Description: Bedrock text model ID (e.g., amazon.titan-text-express-v1 or anthropic.claude-3-haiku-20240307-v1:0)
+  RssUrls:
+    Type: String
+    Default: "https://feeds.bbci.co.uk/news/world/rss.xml,https://www.reuters.com/world/rss,https://apnews.com/hub/ap-top-news?utm_source=apnews.com&utm_medium=referral&utm_campaign=rss,https://www.theguardian.com/world/rss,https://www.theverge.com/rss/index.xml"
+    Description: Comma-separated RSS URLs
+  VoiceId:
+    Type: String
+    Default: Matthew
+    Description: Amazon Polly voice ID (e.g., Matthew, Joanna, Lupe, Arthur)
+  MaxArticles:
+    Type: Number
+    Default: 3
+    Description: How many items to summarize per run
+
+Globals:
+  Function:
+    Runtime: python3.11
+    Timeout: 180
+    MemorySize: 1024
+    Tracing: Active
+
+Resources:
+  AssetsBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      OwnershipControls:
+        Rules:
+          - ObjectOwnership: BucketOwnerPreferred
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+
+  NewsToAudioFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: myownnews/
+      Handler: app.lambda_handler
+      Environment:
+        Variables:
+          BUCKET: !Ref AssetsBucket
+          MODEL_ID: !Ref ModelId
+          RSS_URLS: !Ref RssUrls
+          VOICE_ID: !Ref VoiceId
+          MAX_ARTICLES: !Ref MaxArticles
+      Policies:
+        - S3CrudPolicy:
+            BucketName: !Ref AssetsBucket
+        - Statement:
+            - Sid: AllowBedrockInvoke
+              Effect: Allow
+              Action:
+                - bedrock:InvokeModel
+                - bedrock:InvokeModelWithResponseStream
+              Resource: "*"
+            - Sid: AllowPolly
+              Effect: Allow
+              Action:
+                - polly:SynthesizeSpeech
+              Resource: "*"
+      Events:
+        # Optional schedule, enable later after testing
+        # DailySchedule:
+        #   Type: Schedule
+        #   Properties:
+        #     Schedule: cron(0 13 * * ? *)
+        #     Name: MyOwnNewsDaily
+        #     Enabled: false
+
+Outputs:
+  BucketName:
+    Value: !Ref AssetsBucket
+  FunctionName:
+    Value: !Ref NewsToAudioFunction

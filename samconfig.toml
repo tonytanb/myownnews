@@ -1,0 +1,36 @@
+# More information about the configuration file can be found here:
+# https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-config.html
+version = 0.1
+
+[default.global.parameters]
+stack_name = "myownnews"
+
+[default.build.parameters]
+cached = true
+parallel = true
+
+[default.validate.parameters]
+lint = true
+
+[default.deploy.parameters]
+capabilities = "CAPABILITY_IAM"
+confirm_changeset = true
+resolve_s3 = true
+stack_name = "myownnews-mvp"
+s3_prefix = "myownnews-mvp"
+region = "us-east-1"
+profile = "work-nvirginia"
+parameter_overrides = "ModelId=\"amazon.titan-text-lite-v1\" RssUrls=\"https://feeds.bbci.co.uk/news/world/rss.xml,https://www.reuters.com/world/rss,https://apnews.com/hub/ap-top-news?utm_source=apnews.com&utm_medium=referral&utm_campaign=rss,https://www.theguardian.com/world/rss,https://www.theverge.com/rss/index.xml\" VoiceId=\"Matthew\" MaxArticles=\"3\""
+image_repositories = []
+
+[default.package.parameters]
+resolve_s3 = true
+
+[default.sync.parameters]
+watch = true
+
+[default.local_start_api.parameters]
+warm_containers = "EAGER"
+
+[default.local_start_lambda.parameters]
+warm_containers = "EAGER"

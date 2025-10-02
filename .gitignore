@@ -1,0 +1,15 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.venv/
+venv/
+.env
+.vscode/
+.DS_Store
+.aws-sam/
+.aws/
+.template/
+response.json
+news.mp3
+node_modules/
