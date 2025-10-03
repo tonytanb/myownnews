@@ -1,4 +1,4 @@
-import os, json, time, uuid, boto3, feedparser
+import os, json, time, uuid, boto3, feedparser, re, html, botocore
 from datetime import datetime, timezone
 
 REGION = os.getenv("AWS_REGION", "us-east-1")
@@ -29,21 +29,38 @@ def _pull_articles(urls, limit):
     return items[:limit]
 
 def _to_prompt(items):
-    parts, sources = [], []
-    for i, it in enumerate(items, start=1):
-        title = it.get("title",""); summary = it.get("summary",""); link = it.get("link","")
-        parts.append(f"[{i}] Title: {title}\nSummary: {summary}\nLink: {link}")
-        if link: sources.append(link)
-    joined = "\n\n".join(parts)
+    # collapse items to concise bullets (no labels, no URLs)
+    parts = []
+    sources = []
+    for it in items:
+        t = it.get("title", "").strip()
+        s = it.get("summary", "").strip()
+        if it.get("link"): sources.append(it["link"])
+        # keep it compact; no label words
+        bullet = f"- {t}. {s}".strip().rstrip(".") + "."
+        parts.append(bullet)
+
+    joined = "\n".join(parts)
+
     prompt = (
-        "You are a concise news writer with a light, witty tone (Morning Brew/Ángel Martín vibe). "
-    "Combine the following items into a 120–180 word script intended to be SPOKEN OUT LOUD. "
-    "Lead with the most impactful fact, use short sentences, stay neutral, avoid hype. "
-    "Do NOT include any 'Sources' line, links, or URLs in the script. "
-    "End with a single upbeat closing line. "
-    "\n\n" + joined
+    "You are a concise news writer with a light, witty tone (inspired by these sources: Morning Brew/AM Podscast, una produccion de the Voice Village, Informativo de Ángel Martín vibe). "
+    "Write a 130–160 word OUT-LOUD script for a daily news brief in a crisp, witty, millennial tone "
+    "(think quick cuts, natural contractions, one light, tasteful aside—no snark). "
+    "Open with the strongest fact in one sentence. Keep sentences short (6–14 words). "
+    "No headings, no lists, no links, no 'Sources'. End with one upbeat closer.\n\n"
+    f"Items:\n{joined}"
     )
+
     return prompt, sources
+
+def _clean_script(text: str) -> str:
+    # drop any lines that start with common label words, just in case
+    cleaned = re.sub(r'(?im)^\s*(title|summary|link)\s*:.*$', '', text)
+    # also remove leading list bullets that sometimes slip in
+    cleaned = re.sub(r'(?m)^\s*[-•]\s*', '', cleaned)
+    # collapse extra blank lines
+    cleaned = re.sub(r'\n{3,}', '\n\n', cleaned)
+    return cleaned.strip()
 
 def _invoke_titan_text(prompt: str) -> str:
     payload = {"inputText": prompt, "textGenerationConfig": {"maxTokenCount": 800, "temperature": 0.3, "topP": 0.9}}
@@ -54,28 +71,43 @@ def _invoke_titan_text(prompt: str) -> str:
         raise RuntimeError(f"Bedrock returned no results: {body}")
     return results[0].get("outputText","").strip()
 
-# def _synthesize_mp3(text: str) -> bytes:
-#     r = polly.synthesize_speech(Text=text, VoiceId=VOICE_ID, OutputFormat="mp3")
-#     return r["AudioStream"].read()
+def _to_ssml(text: str) -> str:
+    # Normalize and escape
+    t = text.replace("\r\n", "\n").replace("\r", "\n")
+    safe = html.escape(t, quote=False)
+    # Natural pauses (ok for neural)
+    safe = safe.replace("\n\n", "<break time='350ms'/>")
+    safe = safe.replace("\n", "<break time='180ms'/>")
+    # Keep SSML minimal for neural voices: rate tweak only (no pitch)
+    return f"<speak><prosody rate='105%'>{safe}</prosody></speak>"
 
 def _synthesize_mp3(text: str) -> bytes:
-    # Basic SSML: news domain + short pause between sentences
-    ssml = f"""
-    <speak>
-      <amazon:domain name="news">
-        {text}
-      </amazon:domain>
-    </speak>
-    """
-    r = polly.synthesize_speech(
-        Text=ssml,
-        TextType="ssml",
-        VoiceId= Joanna,   # e.g., Matthew, Joanna, Lupe
-        Engine="neural",    # more natural prosody
-        OutputFormat="mp3"
-    )
-    return r["AudioStream"].read()
+    ssml = _to_ssml(text)
+    print("SSML_PREVIEW:", ssml[:300])
 
+    try:
+        r = polly.synthesize_speech(
+            Text=ssml,
+            TextType="ssml",
+            VoiceId=VOICE_ID,
+            Engine="neural",
+            OutputFormat="mp3"
+        )
+        return r["AudioStream"].read()
+    except botocore.exceptions.ClientError as e:
+        # Fallback 1: strip prosody, keep plain <speak>
+        if e.response.get("Error", {}).get("Code") in ("InvalidSsmlException", "UnsupportedPlsAlphabet"):
+            basic_ssml = f"<speak>{html.escape(text, quote=False)}</speak>"
+            print("Retrying Polly with basic SSML…")
+            r = polly.synthesize_speech(
+                Text=basic_ssml,
+                TextType="ssml",
+                VoiceId=VOICE_ID,
+                Engine="neural",
+                OutputFormat="mp3"
+            )
+            return r["AudioStream"].read()
+        raise
 
 def _put_s3(key: str, data: bytes, content_type: str):
     s3.put_object(Bucket=BUCKET, Key=key, Body=data, ContentType=content_type)
@@ -85,9 +117,13 @@ def lambda_handler(event, context):
     if not RSS_URLS: raise RuntimeError("No RSS_URLS provided")
     items = _pull_articles(RSS_URLS, MAX_ARTICLES)
     if not items: raise RuntimeError("No articles pulled from feeds")
+    print("DEBUG:", {"rss_count": len(RSS_URLS), "max_articles": MAX_ARTICLES, "voice": VOICE_ID})
+
 
     prompt, sources = _to_prompt(items)
     script = _invoke_titan_text(prompt)
+    script = _clean_script(script)
+    if not script: raise RuntimeError("No script generated")
 
     ts = int(time.time()); day = datetime.utcnow().strftime("%Y-%m-%d"); uid = uuid.uuid4().hex[:8]
     script_key = f"scripts/{day}/script-{ts}-{uid}.txt"
