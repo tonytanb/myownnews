@@ -1,0 +1,49 @@
+name: Deploy MyOwnNews
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Setup SAM CLI
+      uses: aws-actions/setup-sam@v2
+    
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v2
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-east-1
+    
+    - name: Build SAM application
+      run: sam build --use-container
+    
+    - name: Deploy to AWS (main branch only)
+      if: github.ref == 'refs/heads/main'
+      run: |
+        sam deploy --no-confirm-changeset \
+          --parameter-overrides \
+            NewsApiKey=${{ secrets.NEWS_API_KEY }} \
+            NewsCategories=general,technology,business \
+            VoiceId=Matthew \
+            MaxArticles=5
+    
+    - name: Test deployment (main branch only)
+      if: github.ref == 'refs/heads/main'
+      run: |
+        FUNCTION_NAME=$(aws cloudformation describe-stacks --stack-name myownnews-mvp --query 'Stacks[0].Outputs[?OutputKey==`FunctionName`].OutputValue' --output text)
+        aws lambda invoke --function-name "$FUNCTION_NAME" response.json
+        cat response.json
