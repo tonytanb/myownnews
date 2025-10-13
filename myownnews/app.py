@@ -1,7 +1,7 @@
 import os, json, time, uuid, boto3, requests, re, html, botocore
 from datetime import datetime, timezone
 
-REGION = os.getenv("AWS_REGION", "us-east-1")
+REGION = os.getenv("AWS_REGION", "us-west-2")
 MODEL_ID = os.getenv("MODEL_ID", "amazon.titan-text-lite-v1")
 NEWS_API_KEY = os.getenv("NEWS_API_KEY")
 NEWS_CATEGORIES = [c.strip() for c in os.getenv("NEWS_CATEGORIES", "general,technology,business").split(",") if c.strip()]
@@ -15,6 +15,44 @@ bedrock = boto3.client("bedrock-runtime", region_name=REGION)
 
 def _pull_articles(categories, limit):
     items = []
+    
+    # First, get some international headlines for global perspective
+    try:
+        url = "https://newsapi.org/v2/top-headlines"
+        international_params = {
+            "apiKey": NEWS_API_KEY,
+            "pageSize": limit,
+            "sortBy": "popularity",
+            "language": "en",
+            "sources": "bbc-news,reuters,al-jazeera-english,the-guardian-uk"  # Global sources
+        }
+        
+        response = requests.get(url, params=international_params, timeout=30)
+        response.raise_for_status()
+        data = response.json()
+        
+        if data.get("status") == "ok":
+            for article in data.get("articles", [])[:2]:  # Just 2 international stories
+                title = article.get("title", "")
+                description = article.get("description", "")
+                source = article.get("source", {}).get("name", "")
+                
+                if (title and description and len(description) > 50 and
+                    not title.lower().startswith("[removed]") and
+                    source not in ["Google News", "[Removed]"]):
+                    
+                    items.append({
+                        "title": title,
+                        "summary": description,
+                        "link": article.get("url", ""),
+                        "published": article.get("publishedAt", ""),
+                        "source": source,
+                        "category": "international"
+                    })
+    except Exception as ex:
+        print(f"International news error: {ex}")
+    
+    # Then get US news by category
     for category in categories:
         try:
             url = "https://newsapi.org/v2/top-headlines"
@@ -22,8 +60,8 @@ def _pull_articles(categories, limit):
                 "apiKey": NEWS_API_KEY,
                 "category": category,
                 "country": "us",
-                "pageSize": limit,
-                "sortBy": "publishedAt"
+                "pageSize": limit * 2,
+                "sortBy": "popularity"
             }
             
             response = requests.get(url, params=params, timeout=30)
@@ -31,16 +69,29 @@ def _pull_articles(categories, limit):
             data = response.json()
             
             if data.get("status") == "ok":
-                for article in data.get("articles", [])[:limit]:
-                    if article.get("title") and article.get("description"):
+                for article in data.get("articles", []):
+                    title = article.get("title", "")
+                    description = article.get("description", "")
+                    source = article.get("source", {}).get("name", "")
+                    
+                    # Filter out low-quality articles
+                    if (title and description and 
+                        len(description) > 50 and  # Substantial description
+                        not title.lower().startswith("[removed]") and
+                        source not in ["Google News", "[Removed]"] and
+                        "..." not in title[-10:]):  # Avoid truncated titles
+                        
                         items.append({
-                            "title": article.get("title", ""),
-                            "summary": article.get("description", ""),
+                            "title": title,
+                            "summary": description,
                             "link": article.get("url", ""),
                             "published": article.get("publishedAt", ""),
-                            "source": article.get("source", {}).get("name", ""),
+                            "source": source,
                             "category": category
                         })
+                        
+                        if len(items) >= limit * len(categories):  # Stop when we have enough
+                            break
             else:
                 print(f"News API error for category {category}: {data.get('message', 'Unknown error')}")
                 
@@ -71,13 +122,24 @@ def _to_prompt(items):
     joined = "\n".join(parts)
 
     prompt = (
-    "You are a concise news writer with a light, witty tone (inspired by these sources: Morning Brew/AM Podscast, una produccion de the Voice Village, Informativo de Ángel Martín vibe). "
-    "Write a 130–160 word OUT-LOUD script for a daily news brief in a crisp, witty, millennial tone "
-    "(think quick cuts, natural contractions, one light, tasteful aside—no snark). "
-    "Open with the strongest fact in one sentence. Keep sentences short (6–14 words). "
-    "Mix categories naturally (tech, business, general news). "
-    "No headings, no lists, no links, no 'Sources'. End with one upbeat closer.\n\n"
-    f"Items:\n{joined}"
+    "You're hosting a daily international news podcast inspired by AM Podcast style. Write a 160-word conversational script "
+    "covering today's 2 biggest global stories. Sound like that witty friend who makes world news actually interesting.\n\n"
+    
+    "AM Podcast Structure:\n"
+    "- Open with energy: 'Alright, let's dive into what's happening around the world today...'\n"
+    "- Story 1: 'So, first up...' [explain + why it matters globally]\n"
+    "- Smooth transition: 'And speaking of [theme]...' or 'Meanwhile, in [location]...'\n"
+    "- Story 2: Brief setup + context + impact\n"
+    "- Close with: 'And that's what's moving the world today. Stay curious!'\n\n"
+    
+    "Tone (AM Podcast meets Ángel Martín):\n"
+    "- Conversational but smart - explain complex stuff simply\n"
+    "- Add personality: 'honestly', 'wild', 'get this', 'plot twist'\n"
+    "- Make global news feel relevant and engaging\n"
+    "- Never boring, always human\n\n"
+    
+    f"Today's international stories:\n{joined}\n\n"
+    "Your AM-style podcast script:"
     )
 
     return prompt, sources
@@ -91,7 +153,7 @@ def _clean_script(text: str) -> str:
     cleaned = re.sub(r'\n{3,}', '\n\n', cleaned)
     return cleaned.strip()
 
-def _invoke_titan_text(prompt: str) -> str:
+def _invoke_bedrock_text(prompt: str) -> str:
     print("=== BEDROCK DEBUG START ===")
     print(f"MODEL_ID: {MODEL_ID}")
     print(f"REGION: {REGION}")
@@ -101,14 +163,30 @@ def _invoke_titan_text(prompt: str) -> str:
     print("PROMPT_PREVIEW (last 200 chars):")
     print(prompt[-200:])
     
-    payload = {
-        "inputText": prompt, 
-        "textGenerationConfig": {
-            "maxTokenCount": 800, 
-            "temperature": 0.3, 
-            "topP": 0.9
+    # Check if using Claude or Titan
+    if "claude" in MODEL_ID.lower():
+        # Claude format
+        payload = {
+            "anthropic_version": "bedrock-2023-05-31",
+            "max_tokens": 800,
+            "temperature": 0.3,
+            "messages": [
+                {
+                    "role": "user",
+                    "content": prompt
+                }
+            ]
         }
-    }
+    else:
+        # Titan format
+        payload = {
+            "inputText": prompt, 
+            "textGenerationConfig": {
+                "maxTokenCount": 800, 
+                "temperature": 0.3, 
+                "topP": 0.9
+            }
+        }
     
     print(f"BEDROCK_PAYLOAD: {json.dumps(payload, indent=2)}")
     
@@ -123,14 +201,20 @@ def _invoke_titan_text(prompt: str) -> str:
         body = json.loads(body_bytes)
         print(f"BEDROCK_FULL_RESPONSE: {json.dumps(body, indent=2)}")
         
-        results = body.get("results", [])
-        print(f"RESULTS_COUNT: {len(results)}")
+        # Parse response based on model type
+        if "claude" in MODEL_ID.lower():
+            # Claude response format
+            content = body.get("content", [])
+            if not content:
+                raise RuntimeError(f"Claude returned no content: {body}")
+            output_text = content[0].get("text", "").strip()
+        else:
+            # Titan response format
+            results = body.get("results", [])
+            if not results:
+                raise RuntimeError(f"Titan returned no results: {body}")
+            output_text = results[0].get("outputText", "").strip()
         
-        if not results:
-            print("ERROR: No results in Bedrock response")
-            raise RuntimeError(f"Bedrock returned no results: {body}")
-        
-        output_text = results[0].get("outputText", "").strip()
         print(f"OUTPUT_TEXT_LENGTH: {len(output_text)} characters")
         print("OUTPUT_TEXT_PREVIEW (first 300 chars):")
         print(output_text[:300])
@@ -152,15 +236,30 @@ def _to_ssml(text: str) -> str:
     # Normalize and escape
     t = text.replace("\r\n", "\n").replace("\r", "\n")
     safe = html.escape(t, quote=False)
-    # Natural pauses (ok for neural)
-    safe = safe.replace("\n\n", "<break time='350ms'/>")
-    safe = safe.replace("\n", "<break time='180ms'/>")
-    # Keep SSML minimal for neural voices: rate tweak only (no pitch)
-    return f"<speak><prosody rate='105%'>{safe}</prosody></speak>"
+    
+    # Add natural conversational pauses
+    safe = safe.replace("...", "<break time='500ms'/>")  # Dramatic pauses
+    safe = safe.replace(", ", ", <break time='200ms'/>")  # Comma pauses
+    safe = safe.replace(". ", ". <break time='400ms'/>")  # Sentence breaks
+    safe = safe.replace("? ", "? <break time='350ms'/>")  # Question pauses
+    safe = safe.replace("! ", "! <break time='300ms'/>")  # Exclamation pauses
+    
+    # Paragraph breaks for topic transitions
+    safe = safe.replace("\n\n", "<break time='600ms'/>")
+    safe = safe.replace("\n", "<break time='250ms'/>")
+    
+    # Slightly slower, more conversational pace for neural voices
+    return f"<speak><prosody rate='95%'>{safe}</prosody></speak>"
 
 def _synthesize_mp3(text: str) -> bytes:
+    # Polly has a 3000 character limit for SSML
+    if len(text) > 1800:  # Leave room for SSML tags and be more conservative
+        print(f"WARNING: Text too long ({len(text)} chars), truncating...")
+        text = text[:1800] + "... and that's your news update!"
+    
     ssml = _to_ssml(text)
     print("SSML_PREVIEW:", ssml[:300])
+    print(f"SSML_LENGTH: {len(ssml)} characters")
 
     try:
         r = polly.synthesize_speech(
@@ -215,7 +314,7 @@ def lambda_handler(event, context):
     print(f"SOURCES_COUNT: {len(sources)}")
     
     print("Calling Bedrock to generate script...")
-    script = _invoke_titan_text(prompt)
+    script = _invoke_bedrock_text(prompt)
     
     print(f"RAW_SCRIPT_LENGTH: {len(script)}")
     print("RAW_SCRIPT_CONTENT:")
@@ -227,6 +326,18 @@ def lambda_handler(event, context):
     print(f"CLEANED_SCRIPT_LENGTH: {len(script)}")
     print("CLEANED_SCRIPT_CONTENT:")
     print(script)
+    
+    # Aggressive length check - Polly limit is ~3000 chars for SSML
+    if len(script) > 1200:  # Very conservative limit
+        print(f"WARNING: Script too long ({len(script)} chars), truncating to 1200...")
+        # Find a good place to cut (end of sentence)
+        truncated = script[:1200]
+        last_period = truncated.rfind('.')
+        if last_period > 800:  # Make sure we don't cut too short
+            script = truncated[:last_period + 1] + " That's your news update!"
+        else:
+            script = truncated + "... That's your news update!"
+        print(f"TRUNCATED_SCRIPT_LENGTH: {len(script)}")
     
     if not script: 
         print("ERROR: Script is empty after cleaning")

@@ -9,6 +9,12 @@
 # Test the function
 ./scripts/test.sh
 
+# Download latest generated content
+./scripts/download-latest.sh
+
+# Archive old working files
+./scripts/archive-old.sh
+
 # View logs for debugging
 ./scripts/logs.sh
 
@@ -91,9 +97,19 @@ Edit `template.yaml` parameter `VoiceId` default value, then:
 aws cloudformation describe-stacks --stack-name myownnews-mvp
 ```
 
-### Clean Up Test Files
+### Content Management
 ```bash
-rm -f latest-*.txt latest-*.mp3 response.json generated-*.txt metadata.json news-brief.mp3
+# Download and organize latest generated content
+./scripts/download-latest.sh
+
+# Archive current working files before testing new versions
+./scripts/archive-old.sh
+
+# View current best content
+ls -la generated/*/working/
+
+# View historical versions
+ls -la generated/*/archive/
 ```
 
 ## 📦 Dependencies

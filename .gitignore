@@ -47,6 +47,12 @@ generated-*.txt
 news-brief.mp3
 metadata.json
 response.json
+latest-*.txt
+latest-*.mp3
+claude-*.txt
+claude-*.mp3
+podcast-*.txt
+test-*.json
 
 # Secrets (extra safety)
 .env

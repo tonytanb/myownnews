@@ -5,8 +5,8 @@ Description: MyOwnNews MVP — RSS -> LLM script -> Polly MP3 -> S3
 Parameters:
   ModelId:
     Type: String
-    Default: amazon.titan-text-lite-v1
-    Description: Bedrock text model ID (e.g., amazon.titan-text-express-v1 or anthropic.claude-3-haiku-20240307-v1:0)
+    Default: anthropic.claude-3-haiku-20240307-v1:0
+    Description: Claude 3 Haiku - Now available in us-west-2!
   NewsApiKey:
     Type: String
     Default: "56e5f744fdb04e1e8e45a450851e442d"
@@ -14,12 +14,12 @@ Parameters:
     NoEcho: true
   NewsCategories:
     Type: String
-    Default: "general,technology,business"
+    Default: "general,technology,business,science"
     Description: Comma-separated News API categories (general, business, entertainment, health, science, sports, technology)
   VoiceId:
     Type: String
-    Default: Matthew
-    Description: Amazon Polly voice ID (e.g., Matthew, Joanna, Lupe, Arthur)
+    Default: Joanna
+    Description: Amazon Polly Neural voice ID (Joanna, Matthew, Amy, Emma, Brian, or Olivia for natural sound)
   MaxArticles:
     Type: Number
     Default: 3

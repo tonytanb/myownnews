@@ -1,0 +1,20 @@
+{
+  "started": "2025-10-13T00:10:53.917545+00:00",
+  "model": "amazon.titan-text-lite-v1",
+  "voice": "Matthew",
+  "categories": [
+    "general",
+    "technology",
+    "business"
+  ],
+  "max_articles": 5,
+  "script_key": "scripts/2025-10-13/script-1760314259-51cbafde.txt",
+  "audio_key": "audio/2025-10-13/voice-1760314259-51cbafde.mp3",
+  "sources": [
+    "https://www.npr.org/2025/10/11/nx-s1-5571945/trump-pentagon-hegseth-pay-military-during-shutdown",
+    "https://www.buzzfeed.com/jillianwilson/experts-say-this-why-youre-mean-when-overstimulated-sc",
+    "https://www.washingtonpost.com/politics/2025/10/11/trump-national-guard-illinois/",
+    "https://www.axios.com/2025/10/10/trump-officials-federal-layoffs",
+    "https://nintendoeverything.com/super-mario-galaxy-2-on-nintendo-switch-removes-an-npc/"
+  ]
+}

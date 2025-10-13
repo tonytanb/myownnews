@@ -1,26 +1,30 @@
 # MyOwnNews 🎙️
 
-**AI-Powered Daily News Brief Generator**
+**AI-Powered International News Podcast Generator**
 
-A serverless application that transforms breaking news into personalized audio briefings using AWS AI services. Built for busy professionals who want to stay informed without the noise.
+A serverless application that transforms breaking global news into engaging audio briefings using Claude AI and AWS services. Inspired by AM Podcast style - casual, witty, and internationally focused.
 
 ## 🚀 Features
 
 ### Current Implementation
-- **Smart News Aggregation**: Fetches top headlines from News API across multiple categories
-- **AI-Powered Summarization**: Uses Amazon Bedrock (Titan) to create concise, witty news scripts
-- **Natural Audio Generation**: Converts text to lifelike speech using Amazon Polly
+- **Claude AI Script Generation**: Uses Anthropic Claude 3 Haiku for creative, conversational news scripts
+- **AM Podcast Style**: Engaging, witty tone inspired by Spanish AM Podcast format
+- **International News Focus**: Global perspective with BBC, Reuters, Al Jazeera, Guardian sources
+- **Neural Voice Synthesis**: Joanna's natural-sounding voice via Amazon Polly Neural
+- **Smart News Curation**: Quality filtering and popularity-based article selection
 - **Serverless Architecture**: Fully managed AWS infrastructure with automatic scaling
+- **Multi-Region Deployment**: Optimized for us-west-2 where Claude access is available
 - **Organized Storage**: Date-based file organization in S3 for scripts, audio, and metadata
-- **Multi-Category Support**: Technology, business, and general news in one brief
-- **Professional Tone**: Morning Brew-inspired writing style for engaging content
 
 ### Technical Highlights
+- **Claude AI Integration**: Advanced conversational AI for engaging content creation
+- **Cross-Region Architecture**: Deployed in us-west-2 for optimal Claude access
+- **Neural Voice Technology**: Premium Polly Neural voices for podcast-quality audio
+- **International News Pipeline**: Multi-source aggregation with quality filtering
 - **Zero Server Management**: Built on AWS Lambda with SAM framework
 - **Cost-Effective**: Pay-per-execution model with AWS Free Tier compatibility
 - **Scalable**: Handles traffic spikes automatically
 - **Secure**: IAM-based permissions with encrypted API keys
-- **Maintainable**: Infrastructure as Code with CloudFormation
 
 ## 🔧 Prerequisites
 
@@ -29,8 +33,9 @@ A serverless application that transforms breaking news into personalized audio b
    - 1,000 requests/day on free tier
    - Access to 80,000+ news sources
    
-2. **AWS Account**: Required for Bedrock, Polly, Lambda, and S3
-   - Bedrock access in us-east-1 region
+2. **AWS Account**: Required for Claude, Polly, Lambda, and S3
+   - **Claude access in us-west-2 region** (critical!)
+   - Bedrock model access for Anthropic Claude 3 Haiku
    - IAM permissions for deployment
 
 ### Required Tools
@@ -50,20 +55,28 @@ cd myownnews
 # Or set as parameter during deployment
 ```
 
-### 2. Build and Deploy
+### 2. Enable Claude Access in AWS Bedrock
+**Critical Step**: Request Claude model access in us-west-2
+```bash
+# Go to AWS Bedrock Console in us-west-2
+https://us-west-2.console.aws.amazon.com/bedrock/home?region=us-west-2#/modelaccess
+
+# Request access for:
+# - Claude 3 Haiku
+# - Claude 3.5 Sonnet (optional)
+```
+
+### 3. Build and Deploy
 ```bash
 # Build the application
 sam build --use-container
 
-# Deploy with guided setup (first time)
-sam deploy --guided
-
-# Or deploy with parameters
-sam deploy \
+# Deploy to us-west-2 (where Claude is available)
+sam deploy --region us-west-2 \
   --parameter-overrides \
     NewsApiKey=your-news-api-key \
-    NewsCategories=general,technology,business \
-    VoiceId=Matthew \
+    NewsCategories=general,technology,business,science \
+    VoiceId=Joanna \
     MaxArticles=5
 ```
 
@@ -79,15 +92,16 @@ aws lambda invoke --function-name <function-name> response.json
 ## 🏗️ Architecture
 
 ```
-News API → Lambda Function → Bedrock (AI Summary) → Polly (Audio) → S3 Storage
-    ↓           ↓                    ↓                  ↓           ↓
-Categories   Python 3.11        Titan Model      Neural Voice   Organized Files
+News API → Lambda Function → Claude AI → Polly Neural → S3 Storage
+    ↓           ↓              ↓           ↓            ↓
+Global Sources  Python 3.11   AM Podcast  Joanna Voice  Organized Files
+(BBC, Reuters)  (us-west-2)   Style       (Natural)     (Date-based)
 ```
 
 ### AWS Services Used
-- **Lambda**: Serverless compute for news processing
-- **Bedrock**: AI text generation and summarization
-- **Polly**: Neural text-to-speech conversion
+- **Lambda**: Serverless compute for news processing (us-west-2)
+- **Bedrock**: Claude AI for creative, conversational script generation
+- **Polly Neural**: Premium text-to-speech with Joanna voice
 - **S3**: Secure storage for audio files and metadata
 - **CloudFormation**: Infrastructure as Code via SAM
 - **IAM**: Fine-grained security permissions
@@ -103,17 +117,19 @@ S3 Bucket Structure:
 ## 🎯 Roadmap & Future Enhancements
 
 ### Phase 1: Core Features ✅
-- [x] News API integration
-- [x] AI summarization with Bedrock
-- [x] Audio generation with Polly
-- [x] S3 storage and organization
-- [x] Serverless deployment
+- [x] Claude AI integration for creative scripts
+- [x] AM Podcast-style conversational tone
+- [x] International news aggregation
+- [x] Neural voice synthesis with Joanna
+- [x] Multi-region deployment (us-west-2)
+- [x] Quality news filtering and curation
 
-### Phase 2: Automation & Scheduling
+### Phase 2: Enhanced AI & Personalization
+- [ ] Claude 3.5 Sonnet for even better scripts
+- [ ] Country-specific news personalization
+- [ ] Multiple voice options (different personalities)
 - [ ] CloudWatch Events for daily automation
-- [ ] Multiple voice options and personalization
 - [ ] Email/SMS delivery of audio links
-- [ ] Web dashboard for managing preferences
 
 ### Phase 3: Advanced Features
 - [ ] Multi-language support
@@ -133,21 +149,23 @@ S3 Bucket Structure:
 
 ### AWS Free Tier (Monthly)
 - **Lambda**: 1M requests free
-- **Bedrock**: 20K input tokens free (Titan Text)
-- **Polly**: 5M characters free
+- **Bedrock**: Claude usage (pay-per-token, very affordable)
+- **Polly Neural**: 1M characters free for neural voices
 - **S3**: 5GB storage free
 
 ### Estimated Monthly Cost (Beyond Free Tier)
-- Daily briefs (30/month): ~$2-5
+- Daily Claude briefs (30/month): ~$3-8
+- Neural voice synthesis: ~$1-3
 - Storage (1 year): ~$1-2
-- **Total**: Under $10/month for personal use
+- **Total**: Under $15/month for personal use
 
 ## 🏆 Hackathon Highlights
 
 ### Innovation
-- **AI-First Approach**: Leverages cutting-edge AWS AI services
+- **Claude AI Integration**: First-class conversational AI for engaging content
+- **AM Podcast Style**: Brings Spanish podcast energy to international news
+- **Cross-Cultural Bridge**: Global news with accessible, witty presentation
 - **Serverless-Native**: Built for cloud scalability from day one
-- **User-Centric**: Solves real problem of information overload
 
 ### Technical Excellence
 - **Production-Ready**: Proper error handling, logging, and security
