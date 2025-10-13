@@ -20,7 +20,7 @@ stack_name = "myownnews-mvp"
 s3_prefix = "myownnews-mvp"
 region = "us-west-2"
 profile = "default"
-parameter_overrides = "ModelId=\"anthropic.claude-3-haiku-20240307-v1:0\" NewsCategories=\"general,technology,business,science\" VoiceId=\"Joanna\" MaxArticles=\"5\" NewsApiKey=\"56e5f744fdb04e1e8e45a450851e442d\""
+parameter_overrides = "ModelId=\"anthropic.claude-3-haiku-20240307-v1:0\" NewsCategories=\"general,technology,business,science\" VoiceId=\"21m00Tcm4TlvDq8ikWAM\" VoiceProvider=\"elevenlabs\" ElevenLabsApiKey=\"sk_1b52f159ca3da812f8bdef268f71ace8d6df11d9500debd3\" MaxArticles=\"10\" NewsApiKey=\"56e5f744fdb04e1e8e45a450851e442d\""
 image_repositories = []
 
 [default.package.parameters]

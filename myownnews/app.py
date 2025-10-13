@@ -5,9 +5,11 @@ REGION = os.getenv("AWS_REGION", "us-west-2")
 MODEL_ID = os.getenv("MODEL_ID", "amazon.titan-text-lite-v1")
 NEWS_API_KEY = os.getenv("NEWS_API_KEY")
 NEWS_CATEGORIES = [c.strip() for c in os.getenv("NEWS_CATEGORIES", "general,technology,business").split(",") if c.strip()]
-VOICE_ID = os.getenv("VOICE_ID", "Matthew")
+VOICE_ID = os.getenv("VOICE_ID", "Joanna")
+VOICE_PROVIDER = os.getenv("VOICE_PROVIDER", "polly")
+ELEVENLABS_API_KEY = os.getenv("ELEVENLABS_API_KEY", "")
 BUCKET = os.getenv("BUCKET")
-MAX_ARTICLES = int(os.getenv("MAX_ARTICLES", "3"))
+MAX_ARTICLES = int(os.getenv("MAX_ARTICLES", "8"))
 
 s3 = boto3.client("s3")
 polly = boto3.client("polly", region_name=REGION)
@@ -21,10 +23,10 @@ def _pull_articles(categories, limit):
         url = "https://newsapi.org/v2/top-headlines"
         international_params = {
             "apiKey": NEWS_API_KEY,
-            "pageSize": limit,
+            "pageSize": 15,  # Get more international stories
             "sortBy": "popularity",
             "language": "en",
-            "sources": "bbc-news,reuters,al-jazeera-english,the-guardian-uk"  # Global sources
+            "sources": "bbc-news,reuters,the-guardian-uk,cnn,associated-press,new-scientist,national-geographic"  # Added science sources
         }
         
         response = requests.get(url, params=international_params, timeout=30)
@@ -32,7 +34,7 @@ def _pull_articles(categories, limit):
         data = response.json()
         
         if data.get("status") == "ok":
-            for article in data.get("articles", [])[:2]:  # Just 2 international stories
+            for article in data.get("articles", [])[:4]:  # Get 4 international stories
                 title = article.get("title", "")
                 description = article.get("description", "")
                 source = article.get("source", {}).get("name", "")
@@ -52,6 +54,41 @@ def _pull_articles(categories, limit):
     except Exception as ex:
         print(f"International news error: {ex}")
     
+    # Get some science/health stories for "team favorites"
+    try:
+        science_params = {
+            "apiKey": NEWS_API_KEY,
+            "category": "science",
+            "pageSize": 10,
+            "sortBy": "popularity",
+            "language": "en"
+        }
+        
+        response = requests.get(url, params=science_params, timeout=30)
+        response.raise_for_status()
+        data = response.json()
+        
+        if data.get("status") == "ok":
+            for article in data.get("articles", [])[:3]:  # Get 3 science stories
+                title = article.get("title", "")
+                description = article.get("description", "")
+                source = article.get("source", {}).get("name", "")
+                
+                if (title and description and len(description) > 50 and
+                    not title.lower().startswith("[removed]") and
+                    source not in ["Google News", "[Removed]"]):
+                    
+                    items.append({
+                        "title": title,
+                        "summary": description,
+                        "link": article.get("url", ""),
+                        "published": article.get("publishedAt", ""),
+                        "source": source,
+                        "category": "science-favorite"
+                    })
+    except Exception as ex:
+        print(f"Science news error: {ex}")
+    
     # Then get US news by category
     for category in categories:
         try:
@@ -59,9 +96,9 @@ def _pull_articles(categories, limit):
             params = {
                 "apiKey": NEWS_API_KEY,
                 "category": category,
-                "country": "us",
-                "pageSize": limit * 2,
-                "sortBy": "popularity"
+                "country": "us", 
+                "pageSize": 20,  # Get more articles to choose from
+                "sortBy": "popularity"  # Get viral/trending stories
             }
             
             response = requests.get(url, params=params, timeout=30)
@@ -114,32 +151,43 @@ def _to_prompt(items):
         
         if it.get("link"): sources.append(it["link"])
         
-        # Add source attribution for credibility
-        source_text = f" ({source})" if source else ""
-        bullet = f"- {t}. {s}{source_text}".strip().rstrip(".") + "."
+        # Clean format without source attribution
+        bullet = f"- {t}. {s}".strip().rstrip(".") + "."
         parts.append(bullet)
 
     joined = "\n".join(parts)
 
     prompt = (
-    "You're hosting a daily international news podcast inspired by AM Podcast style. Write a 160-word conversational script "
-    "covering today's 2 biggest global stories. Sound like that witty friend who makes world news actually interesting.\n\n"
+    "You're hosting a 5-minute daily news podcast for millennials (20s-30s). Write a COMPLETE script "
+    "covering exactly 5 different stories. Each story should be 2-3 sentences. Total length: 500-600 words.\n\n"
     
-    "AM Podcast Structure:\n"
-    "- Open with energy: 'Alright, let's dive into what's happening around the world today...'\n"
-    "- Story 1: 'So, first up...' [explain + why it matters globally]\n"
-    "- Smooth transition: 'And speaking of [theme]...' or 'Meanwhile, in [location]...'\n"
-    "- Story 2: Brief setup + context + impact\n"
-    "- Close with: 'And that's what's moving the world today. Stay curious!'\n\n"
+    "CRITICAL RULES:\n"
+    "- Use ONLY specific details from the stories below\n"
+    "- NO source attributions (don't say 'CNN reports' or 'according to BBC')\n"
+    "- NO placeholders like '[brief summary]' or '[explain]'\n"
+    "- If a story lacks details, skip it\n\n"
     
-    "Tone (AM Podcast meets Ángel Martín):\n"
-    "- Conversational but smart - explain complex stuff simply\n"
-    "- Add personality: 'honestly', 'wild', 'get this', 'plot twist'\n"
-    "- Make global news feel relevant and engaging\n"
-    "- Never boring, always human\n\n"
+    "MILLENNIAL TONE:\n"
+    "- Smart but fun - like explaining news to your college friends\n"
+    "- Use: 'honestly', 'wild', 'get this', 'plot twist', 'lowkey', 'ngl' (not gonna lie)\n"
+    "- Casual contractions: 'we're', 'it's', 'can't', 'won't'\n"
+    "- Light humor when appropriate, but stay respectful\n"
+    "- Make complex stuff relatable\n\n"
     
-    f"Today's international stories:\n{joined}\n\n"
-    "Your AM-style podcast script:"
+    "STRUCTURE (MUST include all 5 stories):\n"
+    "1. Open: 'Alright, let's dive into what's happening around the world today...'\n"
+    "2. Story 1: Biggest news (2-3 sentences with details)\n"
+    "3. Story 2: International/political (2-3 sentences)\n"
+    "4. Story 3: Business/tech news (2-3 sentences)\n"
+    "5. Story 4: General interest (2-3 sentences)\n"
+    "6. Story 5: 'Team Favorite' - Something positive/science/discovery\n"
+    "   - Introduce as: 'And for our team favorite today...' or 'Before we wrap up, here's something cool...'\n"
+    "   - Make it educational and uplifting (2-3 sentences)\n"
+    "7. Close: 'And that's what's moving the world today. Stay curious!'\n\n"
+    
+    f"Today's stories (use specific details only, no source names):\n{joined}\n\n"
+    "Write the complete millennial-friendly podcast script covering ALL 5 stories above. "
+    "Do not stop early. Include opening, all 5 stories with details, and closing:"
     )
 
     return prompt, sources
@@ -252,6 +300,57 @@ def _to_ssml(text: str) -> str:
     return f"<speak><prosody rate='95%'>{safe}</prosody></speak>"
 
 def _synthesize_mp3(text: str) -> bytes:
+    print(f"Using voice provider: {VOICE_PROVIDER}")
+    
+    if VOICE_PROVIDER == "elevenlabs" and ELEVENLABS_API_KEY:
+        return _synthesize_elevenlabs(text)
+    else:
+        return _synthesize_polly(text)
+
+def _synthesize_elevenlabs(text: str) -> bytes:
+    """Synthesize speech using ElevenLabs API"""
+    print("Using ElevenLabs for speech synthesis...")
+    
+    # ElevenLabs can handle longer text
+    if len(text) > 5000:
+        print(f"WARNING: Text too long ({len(text)} chars), truncating...")
+        text = text[:5000] + "... and that's your news update!"
+    
+    try:
+        import requests
+        
+        url = f"https://api.elevenlabs.io/v1/text-to-speech/{VOICE_ID}"
+        headers = {
+            "Accept": "audio/mpeg",
+            "Content-Type": "application/json",
+            "xi-api-key": ELEVENLABS_API_KEY
+        }
+        
+        data = {
+            "text": text,
+            "model_id": "eleven_multilingual_v2",
+            "voice_settings": {
+                "stability": 0.5,
+                "similarity_boost": 0.75,
+                "style": 0.5,
+                "use_speaker_boost": True
+            }
+        }
+        
+        response = requests.post(url, json=data, headers=headers, timeout=60)
+        response.raise_for_status()
+        
+        print(f"ElevenLabs response size: {len(response.content)} bytes")
+        return response.content
+        
+    except Exception as e:
+        print(f"ElevenLabs failed: {e}, falling back to Polly...")
+        return _synthesize_polly(text)
+
+def _synthesize_polly(text: str) -> bytes:
+    """Synthesize speech using Amazon Polly"""
+    print("Using Amazon Polly for speech synthesis...")
+    
     # Polly has a 3000 character limit for SSML
     if len(text) > 1800:  # Leave room for SSML tags and be more conservative
         print(f"WARNING: Text too long ({len(text)} chars), truncating...")

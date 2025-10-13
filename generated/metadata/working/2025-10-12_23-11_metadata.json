@@ -1,0 +1,24 @@
+{
+  "started": "2025-10-13T03:11:26.054753+00:00",
+  "model": "anthropic.claude-3-haiku-20240307-v1:0",
+  "voice": "Joanna",
+  "categories": [
+    "general",
+    "technology",
+    "business",
+    "science"
+  ],
+  "max_articles": 8,
+  "script_key": "scripts/2025-10-13/script-1760325091-723c8414.txt",
+  "audio_key": "audio/2025-10-13/voice-1760325091-723c8414.mp3",
+  "sources": [
+    "https://www.aljazeera.com/news/2025/10/12/russia-ukraine-war-list-of-key-events-day-1326",
+    "https://www.cnn.com/2025/10/11/asia/firefights-pakistan-afghanistan-border-intl-hnk",
+    "https://www.cnn.com/2025/10/11/politics/video/pam-bondi-senate-hearing-notes-cheat-sheets-hignfy-digvid",
+    "https://www.dallasnews.com/sports/texas-longhorns/2025/10/11/5-thoughts-from-texas-oklahoma-arch-manning-outduels-john-mateer-in-red-river-upset/",
+    "https://sports.yahoo.com/mma/breaking-news/live/ufc-rio-live-updates-charles-oliveira-vs-mateusz-gamrot-results-round-by-round-analysis-highlights-060052487.html",
+    "https://www.aljazeera.com/news/2025/10/12/taliban-pakistani-forces-trade-heavy-fire-along-afghanistan-border",
+    "https://www.npr.org/2025/10/11/nx-s1-5571971/diane-keaton-annie-hall-dies",
+    "https://www.politico.com/news/2025/10/11/what-we-know-about-the-cdc-reduction-in-force-00604549"
+  ]
+}
