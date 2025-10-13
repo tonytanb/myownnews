@@ -19,8 +19,8 @@ resolve_s3 = true
 stack_name = "myownnews-mvp"
 s3_prefix = "myownnews-mvp"
 region = "us-east-1"
-profile = "work-nvirginia"
-parameter_overrides = "ModelId=\"amazon.titan-text-lite-v1\" RssUrls=\"https://feeds.bbci.co.uk/news/world/rss.xml,https://www.reuters.com/world/rss,https://apnews.com/hub/ap-top-news?utm_source=apnews.com&utm_medium=referral&utm_campaign=rss,https://www.theguardian.com/world/rss,https://www.theverge.com/rss/index.xml\" VoiceId=\"Matthew\" MaxArticles=\"3\""
+profile = "default"
+parameter_overrides = "ModelId=\"amazon.titan-text-lite-v1\" NewsCategories=\"general,technology,business\" VoiceId=\"Matthew\" MaxArticles=\"5\""
 image_repositories = []
 
 [default.package.parameters]

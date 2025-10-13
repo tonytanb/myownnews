@@ -1,9 +1,10 @@
-import os, json, time, uuid, boto3, feedparser, re, html, botocore
+import os, json, time, uuid, boto3, requests, re, html, botocore
 from datetime import datetime, timezone
 
 REGION = os.getenv("AWS_REGION", "us-east-1")
 MODEL_ID = os.getenv("MODEL_ID", "amazon.titan-text-lite-v1")
-RSS_URLS = [u.strip() for u in os.getenv("RSS_URLS", "").split(",") if u.strip()]
+NEWS_API_KEY = os.getenv("NEWS_API_KEY")
+NEWS_CATEGORIES = [c.strip() for c in os.getenv("NEWS_CATEGORIES", "general,technology,business").split(",") if c.strip()]
 VOICE_ID = os.getenv("VOICE_ID", "Matthew")
 BUCKET = os.getenv("BUCKET")
 MAX_ARTICLES = int(os.getenv("MAX_ARTICLES", "3"))
@@ -12,20 +13,42 @@ s3 = boto3.client("s3")
 polly = boto3.client("polly", region_name=REGION)
 bedrock = boto3.client("bedrock-runtime", region_name=REGION)
 
-def _pull_articles(urls, limit):
+def _pull_articles(categories, limit):
     items = []
-    for url in urls:
+    for category in categories:
         try:
-            feed = feedparser.parse(url)
-            for e in feed.entries[:limit]:
-                items.append({
-                    "title": e.get("title",""),
-                    "summary": e.get("summary",""),
-                    "link": e.get("link",""),
-                    "published": e.get("published","")
-                })
+            url = "https://newsapi.org/v2/top-headlines"
+            params = {
+                "apiKey": NEWS_API_KEY,
+                "category": category,
+                "country": "us",
+                "pageSize": limit,
+                "sortBy": "publishedAt"
+            }
+            
+            response = requests.get(url, params=params, timeout=30)
+            response.raise_for_status()
+            data = response.json()
+            
+            if data.get("status") == "ok":
+                for article in data.get("articles", [])[:limit]:
+                    if article.get("title") and article.get("description"):
+                        items.append({
+                            "title": article.get("title", ""),
+                            "summary": article.get("description", ""),
+                            "link": article.get("url", ""),
+                            "published": article.get("publishedAt", ""),
+                            "source": article.get("source", {}).get("name", ""),
+                            "category": category
+                        })
+            else:
+                print(f"News API error for category {category}: {data.get('message', 'Unknown error')}")
+                
         except Exception as ex:
-            print(f"RSS error for {url}: {ex}")
+            print(f"News API error for category {category}: {ex}")
+    
+    # Sort by published date and return top articles
+    items.sort(key=lambda x: x.get("published", ""), reverse=True)
     return items[:limit]
 
 def _to_prompt(items):
@@ -35,9 +58,14 @@ def _to_prompt(items):
     for it in items:
         t = it.get("title", "").strip()
         s = it.get("summary", "").strip()
+        source = it.get("source", "").strip()
+        category = it.get("category", "").strip()
+        
         if it.get("link"): sources.append(it["link"])
-        # keep it compact; no label words
-        bullet = f"- {t}. {s}".strip().rstrip(".") + "."
+        
+        # Add source attribution for credibility
+        source_text = f" ({source})" if source else ""
+        bullet = f"- {t}. {s}{source_text}".strip().rstrip(".") + "."
         parts.append(bullet)
 
     joined = "\n".join(parts)
@@ -47,6 +75,7 @@ def _to_prompt(items):
     "Write a 130–160 word OUT-LOUD script for a daily news brief in a crisp, witty, millennial tone "
     "(think quick cuts, natural contractions, one light, tasteful aside—no snark). "
     "Open with the strongest fact in one sentence. Keep sentences short (6–14 words). "
+    "Mix categories naturally (tech, business, general news). "
     "No headings, no lists, no links, no 'Sources'. End with one upbeat closer.\n\n"
     f"Items:\n{joined}"
     )
@@ -63,13 +92,61 @@ def _clean_script(text: str) -> str:
     return cleaned.strip()
 
 def _invoke_titan_text(prompt: str) -> str:
-    payload = {"inputText": prompt, "textGenerationConfig": {"maxTokenCount": 800, "temperature": 0.3, "topP": 0.9}}
-    resp = bedrock.invoke_model(modelId=MODEL_ID, body=json.dumps(payload))
-    body = json.loads(resp["body"].read())
-    results = body.get("results", [])
-    if not results:
-        raise RuntimeError(f"Bedrock returned no results: {body}")
-    return results[0].get("outputText","").strip()
+    print("=== BEDROCK DEBUG START ===")
+    print(f"MODEL_ID: {MODEL_ID}")
+    print(f"REGION: {REGION}")
+    print(f"PROMPT_LENGTH: {len(prompt)} characters")
+    print("PROMPT_PREVIEW (first 500 chars):")
+    print(prompt[:500])
+    print("PROMPT_PREVIEW (last 200 chars):")
+    print(prompt[-200:])
+    
+    payload = {
+        "inputText": prompt, 
+        "textGenerationConfig": {
+            "maxTokenCount": 800, 
+            "temperature": 0.3, 
+            "topP": 0.9
+        }
+    }
+    
+    print(f"BEDROCK_PAYLOAD: {json.dumps(payload, indent=2)}")
+    
+    try:
+        print("Calling Bedrock invoke_model...")
+        resp = bedrock.invoke_model(modelId=MODEL_ID, body=json.dumps(payload))
+        print(f"BEDROCK_RESPONSE_STATUS: {resp.get('ResponseMetadata', {}).get('HTTPStatusCode', 'Unknown')}")
+        
+        body_bytes = resp["body"].read()
+        print(f"RESPONSE_BODY_SIZE: {len(body_bytes)} bytes")
+        
+        body = json.loads(body_bytes)
+        print(f"BEDROCK_FULL_RESPONSE: {json.dumps(body, indent=2)}")
+        
+        results = body.get("results", [])
+        print(f"RESULTS_COUNT: {len(results)}")
+        
+        if not results:
+            print("ERROR: No results in Bedrock response")
+            raise RuntimeError(f"Bedrock returned no results: {body}")
+        
+        output_text = results[0].get("outputText", "").strip()
+        print(f"OUTPUT_TEXT_LENGTH: {len(output_text)} characters")
+        print("OUTPUT_TEXT_PREVIEW (first 300 chars):")
+        print(output_text[:300])
+        
+        print("=== BEDROCK DEBUG END ===")
+        return output_text
+        
+    except botocore.exceptions.ClientError as e:
+        print(f"BEDROCK_CLIENT_ERROR: {e}")
+        print(f"ERROR_CODE: {e.response.get('Error', {}).get('Code', 'Unknown')}")
+        print(f"ERROR_MESSAGE: {e.response.get('Error', {}).get('Message', 'Unknown')}")
+        raise
+    except Exception as e:
+        print(f"BEDROCK_GENERAL_ERROR: {e}")
+        print(f"ERROR_TYPE: {type(e).__name__}")
+        raise
 
 def _to_ssml(text: str) -> str:
     # Normalize and escape
@@ -114,16 +191,48 @@ def _put_s3(key: str, data: bytes, content_type: str):
 
 def lambda_handler(event, context):
     started = datetime.now(timezone.utc).isoformat()
-    if not RSS_URLS: raise RuntimeError("No RSS_URLS provided")
-    items = _pull_articles(RSS_URLS, MAX_ARTICLES)
-    if not items: raise RuntimeError("No articles pulled from feeds")
-    print("DEBUG:", {"rss_count": len(RSS_URLS), "max_articles": MAX_ARTICLES, "voice": VOICE_ID})
+    if not NEWS_API_KEY: raise RuntimeError("No NEWS_API_KEY provided")
+    if not NEWS_CATEGORIES: raise RuntimeError("No NEWS_CATEGORIES provided")
+    
+    print("=== NEWS API DEBUG ===")
+    print(f"NEWS_API_KEY_SET: {bool(NEWS_API_KEY)}")
+    print(f"NEWS_CATEGORIES: {NEWS_CATEGORIES}")
+    print(f"MAX_ARTICLES: {MAX_ARTICLES}")
+    
+    items = _pull_articles(NEWS_CATEGORIES, MAX_ARTICLES)
+    if not items: raise RuntimeError("No articles pulled from News API")
+    
+    print(f"ARTICLES_FOUND: {len(items)}")
+    for i, item in enumerate(items):
+        print(f"ARTICLE_{i+1}: {item.get('title', 'No title')[:100]}...")
+    
+    print("DEBUG:", {"categories": NEWS_CATEGORIES, "max_articles": MAX_ARTICLES, "voice": VOICE_ID, "articles_found": len(items)})
 
 
+    print("=== SCRIPT GENERATION DEBUG ===")
     prompt, sources = _to_prompt(items)
+    print(f"GENERATED_PROMPT_LENGTH: {len(prompt)}")
+    print(f"SOURCES_COUNT: {len(sources)}")
+    
+    print("Calling Bedrock to generate script...")
     script = _invoke_titan_text(prompt)
+    
+    print(f"RAW_SCRIPT_LENGTH: {len(script)}")
+    print("RAW_SCRIPT_CONTENT:")
+    print(script)
+    
+    print("Cleaning script...")
     script = _clean_script(script)
-    if not script: raise RuntimeError("No script generated")
+    
+    print(f"CLEANED_SCRIPT_LENGTH: {len(script)}")
+    print("CLEANED_SCRIPT_CONTENT:")
+    print(script)
+    
+    if not script: 
+        print("ERROR: Script is empty after cleaning")
+        raise RuntimeError("No script generated")
+    
+    print("=== SCRIPT GENERATION SUCCESS ===")
 
     ts = int(time.time()); day = datetime.utcnow().strftime("%Y-%m-%d"); uid = uuid.uuid4().hex[:8]
     script_key = f"scripts/{day}/script-{ts}-{uid}.txt"
@@ -135,7 +244,7 @@ def lambda_handler(event, context):
     _put_s3(audio_key, audio_bytes, "audio/mpeg")
 
     meta = {
-        "started": started, "model": MODEL_ID, "voice": VOICE_ID, "rss": RSS_URLS,
+        "started": started, "model": MODEL_ID, "voice": VOICE_ID, "categories": NEWS_CATEGORIES,
         "max_articles": MAX_ARTICLES, "script_key": script_key, "audio_key": audio_key, "sources": sources
     }
     _put_s3(meta_key, json.dumps(meta, indent=2).encode("utf-8"), "application/json")
