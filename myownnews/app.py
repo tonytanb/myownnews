@@ -280,6 +280,46 @@ def _invoke_bedrock_text(prompt: str) -> str:
         print(f"ERROR_TYPE: {type(e).__name__}")
         raise
 
+def _generate_word_timings(text: str) -> list:
+    """Generate estimated word timings based on average speech rate"""
+    import re
+    
+    # Clean text and split into words
+    clean_text = re.sub(r'[^\w\s]', ' ', text)  # Remove punctuation
+    words = [w for w in clean_text.split() if w.strip()]
+    
+    # Average speech rate: ~150 words per minute = 2.5 words per second
+    # So each word takes about 0.4 seconds on average
+    words_per_second = 2.2  # Slightly slower for news reading
+    
+    word_timings = []
+    current_time = 0.0
+    
+    for word in words:
+        # Estimate duration based on word length
+        # Longer words take more time
+        base_duration = 1.0 / words_per_second
+        length_factor = max(0.7, min(1.5, len(word) / 6.0))  # Scale by word length
+        duration = base_duration * length_factor
+        
+        word_timings.append({
+            'word': word,
+            'start': round(current_time, 2),
+            'end': round(current_time + duration, 2)
+        })
+        
+        current_time += duration
+        
+        # Add small pauses for punctuation in original text
+        if any(punct in text[text.find(word):text.find(word) + len(word) + 5] 
+               for punct in ['.', '!', '?']):
+            current_time += 0.3  # Sentence pause
+        elif ',' in text[text.find(word):text.find(word) + len(word) + 3]:
+            current_time += 0.15  # Comma pause
+    
+    print(f"Generated {len(word_timings)} estimated word timings")
+    return word_timings
+
 def _to_ssml(text: str) -> str:
     # Normalize and escape
     t = text.replace("\r\n", "\n").replace("\r", "\n")
@@ -299,7 +339,7 @@ def _to_ssml(text: str) -> str:
     # Slightly slower, more conversational pace for neural voices
     return f"<speak><prosody rate='95%'>{safe}</prosody></speak>"
 
-def _synthesize_mp3(text: str) -> bytes:
+def _synthesize_mp3(text: str) -> tuple[bytes, list]:
     print(f"Using voice provider: {VOICE_PROVIDER}")
     
     if VOICE_PROVIDER == "elevenlabs" and ELEVENLABS_API_KEY:
@@ -307,8 +347,8 @@ def _synthesize_mp3(text: str) -> bytes:
     else:
         return _synthesize_polly(text)
 
-def _synthesize_elevenlabs(text: str) -> bytes:
-    """Synthesize speech using ElevenLabs API"""
+def _synthesize_elevenlabs(text: str) -> tuple[bytes, list]:
+    """Synthesize speech using ElevenLabs API and generate word timings"""
     print("Using ElevenLabs for speech synthesis...")
     
     # ElevenLabs can handle longer text
@@ -341,14 +381,19 @@ def _synthesize_elevenlabs(text: str) -> bytes:
         response.raise_for_status()
         
         print(f"ElevenLabs response size: {len(response.content)} bytes")
-        return response.content
+        audio_bytes = response.content
+        
+        # Generate estimated word timings
+        word_timings = _generate_word_timings(text)
+        
+        return audio_bytes, word_timings
         
     except Exception as e:
         print(f"ElevenLabs failed: {e}, falling back to Polly...")
         return _synthesize_polly(text)
 
-def _synthesize_polly(text: str) -> bytes:
-    """Synthesize speech using Amazon Polly"""
+def _synthesize_polly(text: str) -> tuple[bytes, list]:
+    """Synthesize speech using Amazon Polly and get word timings"""
     print("Using Amazon Polly for speech synthesis...")
     
     # Polly has a 3000 character limit for SSML
@@ -361,27 +406,82 @@ def _synthesize_polly(text: str) -> bytes:
     print(f"SSML_LENGTH: {len(ssml)} characters")
 
     try:
-        r = polly.synthesize_speech(
+        # First, get word timings using speech marks
+        print("Getting word timings from Polly...")
+        marks_response = polly.synthesize_speech(
+            Text=ssml,
+            TextType="ssml",
+            VoiceId=VOICE_ID,
+            Engine="neural",
+            OutputFormat="json",
+            SpeechMarkTypes=["word"]
+        )
+        
+        # Parse word timings
+        word_timings = []
+        marks_data = marks_response["AudioStream"].read().decode('utf-8')
+        for line in marks_data.strip().split('\n'):
+            if line.strip():
+                mark = json.loads(line)
+                if mark.get('type') == 'word':
+                    word_timings.append({
+                        'word': mark.get('value', ''),
+                        'start': mark.get('time', 0) / 1000.0,  # Convert ms to seconds
+                        'end': (mark.get('time', 0) + 500) / 1000.0  # Estimate end time
+                    })
+        
+        print(f"Got {len(word_timings)} word timings")
+        
+        # Then get the actual audio
+        print("Getting audio from Polly...")
+        audio_response = polly.synthesize_speech(
             Text=ssml,
             TextType="ssml",
             VoiceId=VOICE_ID,
             Engine="neural",
             OutputFormat="mp3"
         )
-        return r["AudioStream"].read()
+        
+        return audio_response["AudioStream"].read(), word_timings
+        
     except botocore.exceptions.ClientError as e:
         # Fallback 1: strip prosody, keep plain <speak>
         if e.response.get("Error", {}).get("Code") in ("InvalidSsmlException", "UnsupportedPlsAlphabet"):
             basic_ssml = f"<speak>{html.escape(text, quote=False)}</speak>"
             print("Retrying Polly with basic SSML…")
-            r = polly.synthesize_speech(
+            
+            # Get timings with basic SSML
+            marks_response = polly.synthesize_speech(
+                Text=basic_ssml,
+                TextType="ssml",
+                VoiceId=VOICE_ID,
+                Engine="neural",
+                OutputFormat="json",
+                SpeechMarkTypes=["word"]
+            )
+            
+            word_timings = []
+            marks_data = marks_response["AudioStream"].read().decode('utf-8')
+            for line in marks_data.strip().split('\n'):
+                if line.strip():
+                    mark = json.loads(line)
+                    if mark.get('type') == 'word':
+                        word_timings.append({
+                            'word': mark.get('value', ''),
+                            'start': mark.get('time', 0) / 1000.0,
+                            'end': (mark.get('time', 0) + 500) / 1000.0
+                        })
+            
+            # Get audio with basic SSML
+            audio_response = polly.synthesize_speech(
                 Text=basic_ssml,
                 TextType="ssml",
                 VoiceId=VOICE_ID,
                 Engine="neural",
                 OutputFormat="mp3"
             )
-            return r["AudioStream"].read()
+            
+            return audio_response["AudioStream"].read(), word_timings
         raise
 
 def _put_s3(key: str, data: bytes, content_type: str):
@@ -450,7 +550,7 @@ def lambda_handler(event, context):
     meta_key   = f"runs/{day}/run-{ts}-{uid}.json"
 
     _put_s3(script_key, script.encode("utf-8"), "text/plain")
-    audio_bytes = _synthesize_mp3(script)
+    audio_bytes, word_timings = _synthesize_mp3(script)
     _put_s3(audio_key, audio_bytes, "audio/mpeg")
 
     meta = {
@@ -484,7 +584,7 @@ def lambda_handler(event, context):
         "body": json.dumps({
             "script": script,
             "audio_url": audio_url,
-            "word_timings": [],
+            "word_timings": word_timings,
             "news_items": news_items,
             "generated_at": started
         })
