@@ -102,10 +102,41 @@ const App: React.FC = () => {
 
         {newsData && (
           <div className="news-section">
+            {/* Interactive Transcript */}
+            <div className="transcript-section">
+              <h2>📝 Interactive Transcript</h2>
+              <div className="transcript-container">
+                <div className="transcript-text">
+                  {newsData.script.split(' ').map((word, index) => (
+                    <span
+                      key={index}
+                      className={`transcript-word ${
+                        Math.floor(currentTime * 2) === index ? 'highlighted' : ''
+                      }`}
+                      onClick={() => {
+                        if (audioRef.current) {
+                          audioRef.current.currentTime = index * 0.5;
+                        }
+                      }}
+                    >
+                      {word}{' '}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
+
             {/* News Cards */}
             <div className="news-cards">
               {newsData.news_items.map((item, index) => (
-                <div key={index} className="news-card">
+                <div 
+                  key={index} 
+                  className="news-card"
+                  onClick={() => {
+                    // Simple modal or expand functionality
+                    alert(`Full Story:\n\n${item.title}\n\n${item.full_text}`);
+                  }}
+                >
                   <div className="news-image">
                     {item.image ? (
                       <img src={item.image} alt={item.title} className="news-img" />
@@ -149,9 +180,12 @@ const App: React.FC = () => {
               }}
               title="Rewind 15s"
             >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M11.5,12L20,18V6M11,18V6L2.5,12L11,18Z"/>
-              </svg>
+              <div className="skip-button">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M11.5,12L20,18V6M11,18V6L2.5,12L11,18Z"/>
+                </svg>
+                <span className="skip-text">15</span>
+              </div>
             </button>
             
             <button 
@@ -187,9 +221,12 @@ const App: React.FC = () => {
               }}
               title="Forward 15s"
             >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M13,6V18L21.5,12M4,18L12.5,12L4,6V18Z"/>
-              </svg>
+              <div className="skip-button">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M13,6V18L21.5,12M4,18L12.5,12L4,6V18Z"/>
+                </svg>
+                <span className="skip-text">15</span>
+              </div>
             </button>
             
             <div className="volume-control">
