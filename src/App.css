@@ -339,13 +339,24 @@ body {
   font-size: 1.3rem;
 }
 
+.transcript-instructions {
+  background: #f0f8ff;
+  padding: 0.75rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+  color: #666;
+  border-left: 4px solid #667eea;
+}
+
 .transcript-container {
-  max-height: 200px;
+  height: 300px;
   overflow-y: auto;
-  border: 1px solid #e9ecef;
+  border: 2px solid #e0e0e0;
   border-radius: 8px;
   padding: 1rem;
   background: #fafafa;
+  line-height: 1.8;
 }
 
 .transcript-text {
@@ -368,13 +379,44 @@ body {
   background: linear-gradient(135deg, #ffd700, #ffed4e);
   color: #333;
   font-weight: bold;
-  animation: highlight-pulse 0.3s ease-in-out;
+  box-shadow: 0 0 8px rgba(255, 215, 0, 0.6);
+  transform: scale(1.05);
+  z-index: 1;
+  animation: karaoke-glow 0.4s ease-in-out;
 }
 
-@keyframes highlight-pulse {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.05); }
-  100% { transform: scale(1); }
+@keyframes karaoke-glow {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 4px rgba(255, 215, 0, 0.4);
+  }
+  50% {
+    transform: scale(1.08);
+    box-shadow: 0 0 12px rgba(255, 215, 0, 0.8);
+  }
+  100% {
+    transform: scale(1.05);
+    box-shadow: 0 0 8px rgba(255, 215, 0, 0.6);
+  }
+}
+
+/* Custom scrollbar for transcript */
+.transcript-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.transcript-container::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.transcript-container::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+}
+
+.transcript-container::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
 }
 
 .volume-control {
