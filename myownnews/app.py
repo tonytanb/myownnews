@@ -459,4 +459,33 @@ def lambda_handler(event, context):
     }
     _put_s3(meta_key, json.dumps(meta, indent=2).encode("utf-8"), "application/json")
 
-    return {"statusCode": 200, "body": json.dumps({"message": "OK","script_key": script_key,"audio_key": audio_key,"meta_key": meta_key})}
+    # Generate public S3 URL
+    audio_url = f"https://{BUCKET}.s3.{REGION}.amazonaws.com/{audio_key}"
+    
+    # Format news for frontend
+    news_items = []
+    for item in items[:3]:
+        news_items.append({
+            "title": item.get("title", ""),
+            "category": item.get("category", "").upper().replace("-", " "),
+            "summary": item.get("summary", ""),
+            "full_text": item.get("summary", "")
+        })
+    
+    # Return format for frontend with CORS
+    return {
+        "statusCode": 200,
+        "headers": {
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+            "Access-Control-Allow-Headers": "Content-Type"
+        },
+        "body": json.dumps({
+            "script": script,
+            "audio_url": audio_url,
+            "word_timings": [],
+            "news_items": news_items,
+            "generated_at": started
+        })
+    } 
