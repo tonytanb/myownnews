@@ -1,0 +1,132 @@
+name: 'MyOwnNews Deployment Action'
+description: 'Deploy MyOwnNews serverless application with SAM'
+author: 'Tony Narvaez'
+branding:
+  icon: 'radio'
+  color: 'blue'
+
+inputs:
+  aws-access-key-id:
+    description: 'AWS Access Key ID'
+    required: true
+  aws-secret-access-key:
+    description: 'AWS Secret Access Key'
+    required: true
+  aws-region:
+    description: 'AWS Region'
+    required: false
+    default: 'us-west-2'
+  stack-name:
+    description: 'CloudFormation stack name'
+    required: false
+    default: 'myownnews-mvp'
+  news-api-key:
+    description: 'News API Key'
+    required: true
+  elevenlabs-api-key:
+    description: 'ElevenLabs API Key'
+    required: false
+    default: ''
+  voice-provider:
+    description: 'Voice provider (polly or elevenlabs)'
+    required: false
+    default: 'polly'
+  voice-id:
+    description: 'Voice ID'
+    required: false
+    default: 'Joanna'
+
+outputs:
+  function-url:
+    description: 'The deployed Lambda function URL'
+    value: ${{ steps.deploy.outputs.function-url }}
+  bucket-name:
+    description: 'The S3 bucket name for assets'
+    value: ${{ steps.deploy.outputs.bucket-name }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        
+    - name: Setup AWS SAM
+      uses: aws-actions/setup-sam@v2
+      
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ inputs.aws-access-key-id }}
+        aws-secret-access-key: ${{ inputs.aws-secret-access-key }}
+        aws-region: ${{ inputs.aws-region }}
+        
+    - name: Build SAM application
+      shell: bash
+      run: sam build --use-container
+      
+    - name: Deploy SAM application
+      id: deploy
+      shell: bash
+      run: |
+        sam deploy \
+          --stack-name ${{ inputs.stack-name }} \
+          --region ${{ inputs.aws-region }} \
+          --parameter-overrides \
+            NewsApiKey="${{ inputs.news-api-key }}" \
+            VoiceProvider="${{ inputs.voice-provider }}" \
+            VoiceId="${{ inputs.voice-id }}" \
+            ElevenLabsApiKey="${{ inputs.elevenlabs-api-key }}" \
+          --no-confirm-changeset \
+          --capabilities CAPABILITY_IAM
+          
+        # Get outputs
+        FUNCTION_NAME=$(aws cloudformation describe-stacks \
+          --stack-name ${{ inputs.stack-name }} \
+          --region ${{ inputs.aws-region }} \
+          --query 'Stacks[0].Outputs[?OutputKey==`FunctionName`].OutputValue' \
+          --output text)
+          
+        BUCKET_NAME=$(aws cloudformation describe-stacks \
+          --stack-name ${{ inputs.stack-name }} \
+          --region ${{ inputs.aws-region }} \
+          --query 'Stacks[0].Outputs[?OutputKey==`BucketName`].OutputValue' \
+          --output text)
+          
+        # Create function URL if it doesn't exist
+        FUNCTION_URL=$(aws lambda get-function-url-config \
+          --function-name $FUNCTION_NAME \
+          --region ${{ inputs.aws-region }} \
+          --query 'FunctionUrl' \
+          --output text 2>/dev/null || echo "")
+          
+        if [ -z "$FUNCTION_URL" ]; then
+          FUNCTION_URL=$(aws lambda create-function-url-config \
+            --function-name $FUNCTION_NAME \
+            --auth-type NONE \
+            --region ${{ inputs.aws-region }} \
+            --query 'FunctionUrl' \
+            --output text)
+            
+          # Add permission for function URL
+          aws lambda add-permission \
+            --function-name $FUNCTION_NAME \
+            --statement-id FunctionURLAllowPublicAccess \
+            --action lambda:InvokeFunctionUrl \
+            --principal "*" \
+            --function-url-auth-type NONE \
+            --region ${{ inputs.aws-region }} || true
+        fi
+        
+        echo "function-url=$FUNCTION_URL" >> $GITHUB_OUTPUT
+        echo "bucket-name=$BUCKET_NAME" >> $GITHUB_OUTPUT
+        
+    - name: Test deployment
+      shell: bash
+      run: |
+        echo "Testing function URL: ${{ steps.deploy.outputs.function-url }}"
+        curl -f "${{ steps.deploy.outputs.function-url }}" || echo "Function URL test failed"
