@@ -45,6 +45,8 @@ jobs:
       
     - name: Deploy SAM application
       id: deploy
+      env:
+        AWS_DEFAULT_REGION: us-west-2
       run: |
         sam deploy \
           --stack-name myownnews-${{ github.event.inputs.environment || 'dev' }} \
@@ -55,27 +57,31 @@ jobs:
             VoiceId="21m00Tcm4TlvDq8ikWAM" \
             ElevenLabsApiKey="${{ secrets.ELEVENLABS_API_KEY }}" \
           --no-confirm-changeset \
-          --capabilities CAPABILITY_IAM
+          --capabilities CAPABILITY_IAM \
+          --no-cli-pager
           
         # Get outputs
         FUNCTION_NAME=$(aws cloudformation describe-stacks \
           --stack-name myownnews-${{ github.event.inputs.environment || 'dev' }} \
           --region us-west-2 \
           --query 'Stacks[0].Outputs[?OutputKey==`FunctionName`].OutputValue' \
-          --output text)
+          --output text \
+          --no-cli-pager)
           
         BUCKET_NAME=$(aws cloudformation describe-stacks \
           --stack-name myownnews-${{ github.event.inputs.environment || 'dev' }} \
           --region us-west-2 \
           --query 'Stacks[0].Outputs[?OutputKey==`BucketName`].OutputValue' \
-          --output text)
+          --output text \
+          --no-cli-pager)
           
         # Create function URL if it doesn't exist
         FUNCTION_URL=$(aws lambda get-function-url-config \
           --function-name $FUNCTION_NAME \
           --region us-west-2 \
           --query 'FunctionUrl' \
-          --output text 2>/dev/null || echo "")
+          --output text \
+          --no-cli-pager 2>/dev/null || echo "")
           
         if [ -z "$FUNCTION_URL" ]; then
           FUNCTION_URL=$(aws lambda create-function-url-config \
@@ -83,7 +89,8 @@ jobs:
             --auth-type NONE \
             --region us-west-2 \
             --query 'FunctionUrl' \
-            --output text)
+            --output text \
+            --no-cli-pager)
             
           # Add permission for function URL
           aws lambda add-permission \
@@ -92,7 +99,8 @@ jobs:
             --action lambda:InvokeFunctionUrl \
             --principal "*" \
             --function-url-auth-type NONE \
-            --region us-west-2 || true
+            --region us-west-2 \
+            --no-cli-pager || true
         fi
         
         echo "function-url=$FUNCTION_URL" >> $GITHUB_OUTPUT
