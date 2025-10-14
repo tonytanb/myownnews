@@ -25,20 +25,82 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
       
-    - name: Deploy MyOwnNews
-      uses: ./
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        
+    - name: Setup AWS SAM
+      uses: aws-actions/setup-sam@v2
+      
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
       with:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: 'us-west-2'
-        stack-name: 'myownnews-${{ github.event.inputs.environment || 'dev' }}'
-        news-api-key: ${{ secrets.NEWS_API_KEY }}
-        elevenlabs-api-key: ${{ secrets.ELEVENLABS_API_KEY }}
-        voice-provider: 'elevenlabs'
-        voice-id: '21m00Tcm4TlvDq8ikWAM'
         
-    - name: Output deployment info
+    - name: Build SAM application
+      run: sam build --use-container
+      
+    - name: Deploy SAM application
+      id: deploy
+      run: |
+        sam deploy \
+          --stack-name myownnews-${{ github.event.inputs.environment || 'dev' }} \
+          --region us-west-2 \
+          --parameter-overrides \
+            NewsApiKey="${{ secrets.NEWS_API_KEY }}" \
+            VoiceProvider="elevenlabs" \
+            VoiceId="21m00Tcm4TlvDq8ikWAM" \
+            ElevenLabsApiKey="${{ secrets.ELEVENLABS_API_KEY }}" \
+          --no-confirm-changeset \
+          --capabilities CAPABILITY_IAM
+          
+        # Get outputs
+        FUNCTION_NAME=$(aws cloudformation describe-stacks \
+          --stack-name myownnews-${{ github.event.inputs.environment || 'dev' }} \
+          --region us-west-2 \
+          --query 'Stacks[0].Outputs[?OutputKey==`FunctionName`].OutputValue' \
+          --output text)
+          
+        BUCKET_NAME=$(aws cloudformation describe-stacks \
+          --stack-name myownnews-${{ github.event.inputs.environment || 'dev' }} \
+          --region us-west-2 \
+          --query 'Stacks[0].Outputs[?OutputKey==`BucketName`].OutputValue' \
+          --output text)
+          
+        # Create function URL if it doesn't exist
+        FUNCTION_URL=$(aws lambda get-function-url-config \
+          --function-name $FUNCTION_NAME \
+          --region us-west-2 \
+          --query 'FunctionUrl' \
+          --output text 2>/dev/null || echo "")
+          
+        if [ -z "$FUNCTION_URL" ]; then
+          FUNCTION_URL=$(aws lambda create-function-url-config \
+            --function-name $FUNCTION_NAME \
+            --auth-type NONE \
+            --region us-west-2 \
+            --query 'FunctionUrl' \
+            --output text)
+            
+          # Add permission for function URL
+          aws lambda add-permission \
+            --function-name $FUNCTION_NAME \
+            --statement-id FunctionURLAllowPublicAccess \
+            --action lambda:InvokeFunctionUrl \
+            --principal "*" \
+            --function-url-auth-type NONE \
+            --region us-west-2 || true
+        fi
+        
+        echo "function-url=$FUNCTION_URL" >> $GITHUB_OUTPUT
+        echo "bucket-name=$BUCKET_NAME" >> $GITHUB_OUTPUT
+        
+    - name: Test deployment
       run: |
         echo "🎉 Deployment successful!"
         echo "📡 Function URL: ${{ steps.deploy.outputs.function-url }}"
         echo "🪣 S3 Bucket: ${{ steps.deploy.outputs.bucket-name }}"
+        curl -f "${{ steps.deploy.outputs.function-url }}" || echo "Function URL test failed"
