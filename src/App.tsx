@@ -1,7 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './App.css';
-import InteractiveTranscript from './components/InteractiveTranscript';
-import NewsItems from './components/NewsItems';
 
 interface NewsItem {
   title: string;
@@ -25,14 +23,11 @@ const App: React.FC = () => {
   const audioRef = useRef<HTMLAudioElement>(null);
 
   const fetchNews = async () => {
-    alert('Button clicked! Check console for details.');
-    console.log('🚀 Starting fetchNews...');
     setLoading(true);
     setError(null);
     
     try {
       const apiUrl = process.env.REACT_APP_API_URL || 'https://q4qn6e5kd2ffgdawnqaqs7en2y0suukd.lambda-url.us-west-2.on.aws/';
-      console.log('📡 API URL:', apiUrl);
       
       const response = await fetch(apiUrl, {
         method: 'GET',
@@ -42,20 +37,14 @@ const App: React.FC = () => {
         },
       });
       
-      console.log('📥 Response status:', response.status);
-      console.log('📥 Response headers:', Object.fromEntries(response.headers.entries()));
-      
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('❌ Response error:', errorText);
         throw new Error(`HTTP error! status: ${response.status} - ${errorText}`);
       }
       
       const data: NewsData = await response.json();
-      console.log('✅ Data received:', data);
       setNewsData(data);
     } catch (err) {
-      console.error('❌ Fetch error:', err);
       setError(err instanceof Error ? err.message : 'Failed to fetch news');
     } finally {
       setLoading(false);
@@ -68,59 +57,103 @@ const App: React.FC = () => {
 
   return (
     <div className="app">
-      <header className="app-header">
-        <h1>🎙️ Curio News</h1>
-        <p>AI-powered international news with interactive transcripts</p>
-        <button 
-          onClick={fetchNews} 
-          disabled={loading}
-          className="refresh-button"
-        >
-          {loading ? '🔄 Generating...' : '🔄 Generate Fresh News'}
-        </button>
+      {/* Header */}
+      <header className="header">
+        <div className="logo">CURIO</div>
+        <div className="header-actions">
+          <button className="menu-btn">☰</button>
+          <button className="settings-btn">⚙️</button>
+        </div>
       </header>
 
-      <main className="app-main">
+      {/* Main Content */}
+      <main className="main-content">
+        <div className="date-header">
+          📅 {new Date().toLocaleDateString('en-US', { 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+          })}
+        </div>
+
+        <div className="title-section">
+          <h1>Today's Brief</h1>
+          <p className="subtitle">Your world in 5 minutes</p>
+          
+          {!newsData && !loading && (
+            <button 
+              onClick={fetchNews} 
+              className="generate-btn"
+            >
+              Generate Today's Brief
+            </button>
+          )}
+        </div>
+
         {error && (
           <div className="error-message">
-            ❌ Error: {error}
+            ❌ {error}
           </div>
         )}
 
         {loading && (
-          <div className="loading-message">
+          <div className="loading-section">
             <div className="loading-spinner"></div>
-            <p>Generating your personalized news briefing...</p>
+            <p>Curating your personalized briefing...</p>
           </div>
         )}
 
         {newsData && (
-          <div className="news-content">
-            <div className="audio-section">
-              <h2>🎧 Audio Briefing</h2>
-              <audio 
-                ref={audioRef}
-                controls 
-                src={newsData.audio_url}
-                className="audio-player"
-              >
-                Your browser does not support the audio element.
-              </audio>
-              <p className="generated-time">
-                Generated: {new Date(newsData.generated_at).toLocaleString()}
-              </p>
+          <div className="news-section">
+            {/* News Cards */}
+            <div className="news-cards">
+              {newsData.news_items.map((item, index) => (
+                <div key={index} className="news-card">
+                  <div className="news-image">
+                    <div className="placeholder-image"></div>
+                  </div>
+                  <div className="news-content">
+                    <div className="news-category">{item.category}</div>
+                    <h3 className="news-title">{item.title}</h3>
+                    <p className="news-summary">{item.summary}</p>
+                    <div className="read-more">Tap to read more →</div>
+                  </div>
+                </div>
+              ))}
             </div>
-
-            <InteractiveTranscript 
-              script={newsData.script}
-              wordTimings={newsData.word_timings}
-              audioRef={audioRef}
-            />
-
-            <NewsItems items={newsData.news_items} />
           </div>
         )}
       </main>
+
+      {/* Bottom Audio Player */}
+      {newsData && (
+        <div className="audio-player-container">
+          <div className="audio-info">
+            <div className="brief-title">📻 Today's Brief</div>
+            <div className="audio-time">0:00</div>
+          </div>
+          
+          <div className="audio-controls">
+            <button className="control-btn">⏮️</button>
+            <button className="control-btn">⏯️</button>
+            <button className="control-btn">⏭️</button>
+            <button className="control-btn">🔄</button>
+            <div className="volume-control">
+              <button className="control-btn">🔊</button>
+              <div className="volume-slider"></div>
+            </div>
+          </div>
+
+          <audio 
+            ref={audioRef}
+            src={newsData.audio_url}
+            onError={(e) => console.error('❌ Audio error:', e)}
+            onLoadStart={() => console.log('🎵 Audio loading started')}
+            onCanPlay={() => console.log('✅ Audio can play')}
+            onLoadedData={() => console.log('✅ Audio data loaded')}
+          />
+        </div>
+      )}
     </div>
   );
 };
