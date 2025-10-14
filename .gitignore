@@ -60,4 +60,4 @@ test-*.json
 *.key
 
 # AWS credentials (never commit these)
-.aws/
+.aws/node_modules/
