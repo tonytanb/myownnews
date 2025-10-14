@@ -25,6 +25,7 @@ const App: React.FC = () => {
   const audioRef = useRef<HTMLAudioElement>(null);
 
   const fetchNews = async () => {
+    alert('Button clicked! Check console for details.');
     console.log('🚀 Starting fetchNews...');
     setLoading(true);
     setError(null);
