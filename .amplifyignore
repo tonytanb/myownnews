@@ -1,23 +1,48 @@
-# Ignore SAM/Backend files
+# AMPLIFY FRONTEND ONLY - IGNORE ALL BACKEND FILES
+
+# SAM/CloudFormation Backend Files
 template.yaml
 samconfig.toml
+*.template
+*.template.yaml
+*.template.yml
+
+# Backend Code Directories  
 myownnews/
 api/
 .aws-sam/
+lambda/
+functions/
+
+# Backend Build Artifacts
 *.zip
-*.json
+function-*.zip
+lambda-deployment*.zip
+
+# Scripts and Config Files
 *.sh
 Makefile
+*.toml
+env-vars.json
+response.json
 
-# Ignore other non-frontend files
+# Documentation and Non-Frontend
 docs/
 events/
 generated/
 scripts/
 tests/
+ACTION_README.md
+DEVELOPMENT.md
+aws-cost-protection.md
+
+# Root level source (not React app)
 build/
 public/
 src/
+__init__.py
 
-# Keep only curio-news-ui for frontend
+# Only include the React frontend
 !curio-news-ui/
+!amplify.yml
+!.amplifyignore
