@@ -3,14 +3,16 @@ frontend:
   phases:
     preBuild:
       commands:
+        - cd curio-news-ui
         - npm install
     build:
       commands:
+        - cd curio-news-ui
         - npm run build
   artifacts:
-    baseDirectory: build
+    baseDirectory: curio-news-ui/build
     files:
       - '**/*'
   cache:
     paths:
-      - node_modules/**/*
+      - curio-news-ui/node_modules/**/*
