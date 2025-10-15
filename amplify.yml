@@ -3,12 +3,17 @@ frontend:
   phases:
     preBuild:
       commands:
+        - echo "Starting frontend build process"
         - cd curio-news-ui
-        - npm install
+        - node --version
+        - npm --version
+        - npm ci
     build:
       commands:
+        - echo "Building React application"
         - cd curio-news-ui
         - npm run build
+        - echo "Build completed successfully"
   artifacts:
     baseDirectory: curio-news-ui/build
     files:
