@@ -1,0 +1,23 @@
+# Ignore SAM/Backend files
+template.yaml
+samconfig.toml
+myownnews/
+api/
+.aws-sam/
+*.zip
+*.json
+*.sh
+Makefile
+
+# Ignore other non-frontend files
+docs/
+events/
+generated/
+scripts/
+tests/
+build/
+public/
+src/
+
+# Keep only curio-news-ui for frontend
+!curio-news-ui/
