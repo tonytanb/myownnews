@@ -69,6 +69,8 @@ Resources:
         IgnorePublicAcls: false
         RestrictPublicBuckets: false
 
+
+
   NewsToAudioFunction:
     Type: AWS::Serverless::Function
     Properties:

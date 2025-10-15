@@ -3,7 +3,7 @@
 version = 0.1
 
 [default.global.parameters]
-stack_name = "myownnews"
+stack_name = "myownnews-mvp"
 
 [default.build.parameters]
 cached = true
