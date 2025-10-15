@@ -26,9 +26,12 @@ const App: React.FC = () => {
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(1);
   const [isMuted, setIsMuted] = useState(false);
+  const [expandedCard, setExpandedCard] = useState<number | null>(null);
+  const [usingSpeechSynthesis, setUsingSpeechSynthesis] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
   const transcriptRef = useRef<HTMLDivElement>(null);
   const wordsRef = useRef<(HTMLSpanElement | null)[]>([]);
+  const speechRef = useRef<SpeechSynthesisUtterance | null>(null);
 
   const fetchNews = async () => {
     setLoading(true);
@@ -36,7 +39,7 @@ const App: React.FC = () => {
     
     try {
       // Try real API first, fallback to mock data
-      const apiUrl = process.env.REACT_APP_API_URL || 'https://q4qn6e5kd2ffgdawnqaqs7en2y0suukd.lambda-url.us-west-2.on.aws/';
+      const apiUrl = process.env.REACT_APP_API_URL || 'https://nqot0dir0h.execute-api.us-west-2.amazonaws.com/prod/latest';
       
       const response = await fetch(apiUrl, {
         method: 'GET',
@@ -57,7 +60,7 @@ const App: React.FC = () => {
       // Mock data for demo
       const mockData: NewsData = {
         script: "Alright, let's dive into what's happening around the world today. We've got some wild stories to cover, so let's get started. First up, the biggest news from North Carolina where Republicans are planning to vote on redrawing the state's House district map. This is part of a nationwide redistricting battle that's getting pretty intense. Moving to international news, there's been significant developments in the Middle East with new ceasefire negotiations. The situation remains complex but there's cautious optimism. In technology news, Microsoft has announced their first in-house image generator, marking a major step in the AI competition. And finally, cybersecurity experts are warning about new Android vulnerabilities that could affect millions of users. That's your news update for today!",
-        audio_url: "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav", // Demo audio
+        audio_url: "", // We'll use Web Speech API for demo
         word_timings: [],
         news_items: [
           {
@@ -84,10 +87,69 @@ const App: React.FC = () => {
         ],
         generated_at: new Date().toISOString()
       };
+      // Check if we need to use Web Speech API
+      if (!mockData.audio_url && 'speechSynthesis' in window) {
+        setUsingSpeechSynthesis(true);
+        setDuration(mockData.script.split(' ').length * 0.4); // Estimate duration
+      }
+      
       setNewsData(mockData);
     } finally {
       setLoading(false);
     }
+  };
+
+  // Speech synthesis functions
+  const startSpeechSynthesis = () => {
+    if (!newsData || !usingSpeechSynthesis) return;
+    
+    if (speechRef.current) {
+      speechSynthesis.cancel();
+    }
+    
+    const utterance = new SpeechSynthesisUtterance(newsData.script);
+    utterance.rate = 0.9;
+    utterance.pitch = 1;
+    utterance.volume = isMuted ? 0 : volume;
+    
+    // Try to get a good voice
+    const voices = speechSynthesis.getVoices();
+    const preferredVoice = voices.find(voice => 
+      voice.name.includes('Google') || 
+      voice.name.includes('Microsoft') ||
+      (voice.lang.startsWith('en') && voice.name.includes('US'))
+    ) || voices.find(voice => voice.lang.startsWith('en'));
+    
+    if (preferredVoice) {
+      utterance.voice = preferredVoice;
+    }
+    
+    utterance.onstart = () => {
+      setIsPlaying(true);
+      // Start time tracking
+      const startTime = Date.now();
+      const updateTime = () => {
+        if (speechSynthesis.speaking) {
+          const elapsed = (Date.now() - startTime) / 1000;
+          setCurrentTime(elapsed);
+          requestAnimationFrame(updateTime);
+        }
+      };
+      updateTime();
+    };
+    
+    utterance.onend = () => {
+      setIsPlaying(false);
+      setCurrentTime(0);
+    };
+    
+    utterance.onerror = () => {
+      setIsPlaying(false);
+      setError('Speech synthesis failed. Please try refreshing.');
+    };
+    
+    speechRef.current = utterance;
+    speechSynthesis.speak(utterance);
   };
 
   useEffect(() => {
@@ -158,66 +220,73 @@ const App: React.FC = () => {
         )}
 
         {newsData && (
-          <div className="news-section">
-            {/* Interactive Transcript */}
-            <div className="transcript-section">
-              <h2>📝 Interactive Transcript</h2>
-              <div className="transcript-instructions">
-                Click any word to jump to that point in the audio
-              </div>
-              <div className="transcript-container" ref={transcriptRef}>
-                <div className="transcript-text">
-                  {newsData.script.split(' ').map((word, index) => {
-                    // Calculate word timing (approximately 2.5 words per second)
-                    const wordStartTime = index * 0.4;
-                    const isHighlighted = currentTime >= wordStartTime && currentTime < wordStartTime + 0.4;
-                    
-                    return (
-                      <span
-                        key={index}
-                        ref={el => wordsRef.current[index] = el}
-                        className={`transcript-word ${isHighlighted ? 'highlighted' : ''}`}
-                        onClick={() => {
-                          if (audioRef.current) {
-                            audioRef.current.currentTime = wordStartTime;
-                          }
-                        }}
-                        title={`Jump to ${wordStartTime.toFixed(1)}s`}
-                      >
-                        {word}{' '}
-                      </span>
-                    );
-                  })}
+          <div className="content-layout">
+            {/* Left Column - Transcript */}
+            <div className="left-column">
+              <div className="transcript-section">
+                <h2>📝 Interactive Transcript</h2>
+                <div className="transcript-instructions">
+                  Click any word to jump to that point in the audio
+                </div>
+                <div className="transcript-container" ref={transcriptRef}>
+                  <div className="transcript-text">
+                    {newsData.script.split(' ').map((word, index) => {
+                      // Calculate word timing (approximately 2.5 words per second)
+                      const wordStartTime = index * 0.4;
+                      const isHighlighted = currentTime >= wordStartTime && currentTime < wordStartTime + 0.4;
+                      
+                      return (
+                        <span
+                          key={index}
+                          ref={el => wordsRef.current[index] = el}
+                          className={`transcript-word ${isHighlighted ? 'highlighted' : ''}`}
+                          onClick={() => {
+                            if (audioRef.current) {
+                              audioRef.current.currentTime = wordStartTime;
+                            }
+                          }}
+                          title={`Jump to ${wordStartTime.toFixed(1)}s`}
+                        >
+                          {word}{' '}
+                        </span>
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
             </div>
 
-            {/* News Cards */}
-            <div className="news-cards">
-              {newsData.news_items.map((item, index) => (
-                <div 
-                  key={index} 
-                  className="news-card"
-                  onClick={() => {
-                    // Simple modal or expand functionality
-                    alert(`Full Story:\n\n${item.title}\n\n${item.full_text}`);
-                  }}
-                >
-                  <div className="news-image">
-                    {item.image ? (
-                      <img src={item.image} alt={item.title} className="news-img" />
-                    ) : (
-                      <div className="placeholder-image"></div>
-                    )}
+            {/* Right Column - News Cards */}
+            <div className="right-column">
+              <div className="news-cards-grid">
+                {newsData.news_items.map((item, index) => (
+                  <div 
+                    key={index} 
+                    className={`news-card ${expandedCard === index ? 'expanded' : ''}`}
+                    onClick={() => {
+                      setExpandedCard(expandedCard === index ? null : index);
+                    }}
+                  >
+                    <div className="news-image">
+                      {item.image ? (
+                        <img src={item.image} alt={item.title} className="news-img" />
+                      ) : (
+                        <div className="placeholder-image"></div>
+                      )}
+                    </div>
+                    <div className="news-content">
+                      <div className="news-category">{item.category}</div>
+                      <h3 className="news-title">{item.title}</h3>
+                      <p className="news-summary">
+                        {expandedCard === index ? item.full_text : item.summary}
+                      </p>
+                      <div className="read-more">
+                        {expandedCard === index ? 'Tap to read less ↑' : 'Tap to read more →'}
+                      </div>
+                    </div>
                   </div>
-                  <div className="news-content">
-                    <div className="news-category">{item.category}</div>
-                    <h3 className="news-title">{item.title}</h3>
-                    <p className="news-summary">{item.summary}</p>
-                    <div className="read-more">Tap to read more →</div>
-                  </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           </div>
         )}
@@ -257,7 +326,17 @@ const App: React.FC = () => {
             <button 
               className="play-pause-btn" 
               onClick={() => {
-                if (audioRef.current) {
+                if (usingSpeechSynthesis) {
+                  if (isPlaying) {
+                    speechSynthesis.pause();
+                    setIsPlaying(false);
+                  } else if (speechSynthesis.paused) {
+                    speechSynthesis.resume();
+                    setIsPlaying(true);
+                  } else {
+                    startSpeechSynthesis();
+                  }
+                } else if (audioRef.current) {
                   if (isPlaying) {
                     audioRef.current.pause();
                   } else {
@@ -340,25 +419,29 @@ const App: React.FC = () => {
             </div>
           </div>
 
-          <audio 
-            ref={audioRef}
-            src={newsData.audio_url}
-            preload="auto"
-            onPlay={() => setIsPlaying(true)}
-            onPause={() => setIsPlaying(false)}
-            onTimeUpdate={() => setCurrentTime(audioRef.current?.currentTime || 0)}
-            onLoadedMetadata={() => {
-              setDuration(audioRef.current?.duration || 0);
-              if (audioRef.current) {
-                audioRef.current.volume = volume;
-              }
-            }}
-            onCanPlay={() => console.log('✅ Audio ready to play')}
-            onError={(e) => {
-              console.error('❌ Audio error:', e);
-              setError('Audio failed to load. Please try refreshing.');
-            }}
-          />
+          {newsData.audio_url && (
+            <audio 
+              ref={audioRef}
+              src={newsData.audio_url}
+              preload="auto"
+              onPlay={() => setIsPlaying(true)}
+              onPause={() => setIsPlaying(false)}
+              onTimeUpdate={() => setCurrentTime(audioRef.current?.currentTime || 0)}
+              onLoadedMetadata={() => {
+                setDuration(audioRef.current?.duration || 0);
+                if (audioRef.current) {
+                  audioRef.current.volume = volume;
+                }
+              }}
+              onCanPlay={() => console.log('✅ Audio ready to play')}
+              onError={(e) => {
+                console.error('❌ Audio error:', e);
+                // Fallback to speech synthesis
+                setUsingSpeechSynthesis(true);
+                setDuration(newsData.script.split(' ').length * 0.4);
+              }}
+            />
+          )}
         </div>
       )}
     </div>

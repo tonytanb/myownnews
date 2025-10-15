@@ -1,0 +1,34 @@
+{
+  "Rules": [
+    {
+      "ID": "DeleteOldAudioFiles",
+      "Status": "Enabled",
+      "Filter": {
+        "Prefix": "audio/"
+      },
+      "Expiration": {
+        "Days": 7
+      }
+    },
+    {
+      "ID": "DeleteOldScripts",
+      "Status": "Enabled", 
+      "Filter": {
+        "Prefix": "scripts/"
+      },
+      "Expiration": {
+        "Days": 30
+      }
+    },
+    {
+      "ID": "DeleteRateLimitFiles",
+      "Status": "Enabled",
+      "Filter": {
+        "Prefix": "rate-limit/"
+      },
+      "Expiration": {
+        "Days": 1
+      }
+    }
+  ]
+}

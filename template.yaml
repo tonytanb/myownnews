@@ -9,7 +9,7 @@ Parameters:
     Description: Claude 3 Haiku - Now available in us-west-2!
   NewsApiKey:
     Type: String
-    Default: "56e5f744fdb04e1e8e45a450851e442d"
+    Default: ""
     Description: News API key for fetching headlines
     NoEcho: true
   NewsCategories:
@@ -29,6 +29,11 @@ Parameters:
     Default: ""
     Description: ElevenLabs API key (optional, leave empty to use Polly)
     NoEcho: true
+  NewsDataApiKey:
+    Type: String
+    Default: ""
+    Description: NewsData.io API key (optional, for additional news sources)
+    NoEcho: true
   MaxArticles:
     Type: Number
     Default: 3
@@ -36,12 +41,22 @@ Parameters:
 
 Globals:
   Function:
-    Runtime: python3.11
+    Runtime: python3.12
     Timeout: 180
     MemorySize: 1024
     Tracing: Active
 
 Resources:
+  # API Gateway for serving presigned URLs
+  NewsApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: prod
+      Cors:
+        AllowMethods: "'GET,POST,OPTIONS'"
+        AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+        AllowOrigin: "'*'"
+
   AssetsBucket:
     Type: AWS::S3::Bucket
     Properties:
@@ -49,10 +64,10 @@ Resources:
         Rules:
           - ObjectOwnership: BucketOwnerPreferred
       PublicAccessBlockConfiguration:
-        BlockPublicAcls: true
-        BlockPublicPolicy: true
-        IgnorePublicAcls: true
-        RestrictPublicBuckets: true
+        BlockPublicAcls: false
+        BlockPublicPolicy: false
+        IgnorePublicAcls: false
+        RestrictPublicBuckets: false
 
   NewsToAudioFunction:
     Type: AWS::Serverless::Function
@@ -64,6 +79,7 @@ Resources:
           BUCKET: !Ref AssetsBucket
           MODEL_ID: !Ref ModelId
           NEWS_API_KEY: !Ref NewsApiKey
+          NEWSDATA_API_KEY: !Ref NewsDataApiKey
           NEWS_CATEGORIES: !Ref NewsCategories
           VOICE_ID: !Ref VoiceId
           VOICE_PROVIDER: !Ref VoiceProvider
@@ -84,6 +100,7 @@ Resources:
               Action:
                 - polly:SynthesizeSpeech
               Resource: "*"
+
       Events:
         # Optional schedule, enable later after testing
         # DailySchedule:
@@ -93,8 +110,58 @@ Resources:
         #     Name: MyOwnNewsDaily
         #     Enabled: false
 
+  # API: list latest audio/scripts with presigned URLs
+  ListLatestFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: api/
+      Handler: handlers.list_latest
+      Environment:
+        Variables:
+          BUCKET: !Ref AssetsBucket
+          CORS_ALLOW_ORIGIN: "*"
+          PRESIGN_EXPIRES: 1200  # 20 minutes
+      Policies:
+        - S3ReadPolicy:
+            BucketName: !Ref AssetsBucket
+      Events:
+        ApiLatest:
+          Type: Api
+          Properties:
+            RestApiId: !Ref NewsApi
+            Path: /latest
+            Method: GET
+
+  # API: sign a given key (optional helper)
+  SignKeyFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: api/
+      Handler: handlers.sign_key
+      Environment:
+        Variables:
+          BUCKET: !Ref AssetsBucket
+          CORS_ALLOW_ORIGIN: "*"
+          PRESIGN_EXPIRES: 600
+      Policies:
+        - S3ReadPolicy:
+            BucketName: !Ref AssetsBucket
+      Events:
+        ApiSign:
+          Type: Api
+          Properties:
+            RestApiId: !Ref NewsApi
+            Path: /sign
+            Method: GET
+
 Outputs:
   BucketName:
     Value: !Ref AssetsBucket
   FunctionName:
     Value: !Ref NewsToAudioFunction
+  ApiGatewayUrl:
+    Description: API Gateway endpoint URL
+    Value: !Sub "https://${NewsApi}.execute-api.${AWS::Region}.amazonaws.com/prod"
+  LatestEndpoint:
+    Description: Latest news endpoint
+    Value: !Sub "https://${NewsApi}.execute-api.${AWS::Region}.amazonaws.com/prod/latest"
