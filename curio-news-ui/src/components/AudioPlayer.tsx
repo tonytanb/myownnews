@@ -28,7 +28,7 @@ export default function AudioPlayer() {
       
       // If fresh content is being generated, show progress
       if (shouldRefresh && data.generationStarted) {
-        setMeta(prev => ({ ...prev, why: `🤖 ${agentStatus}: ${why}` }));
+        setMeta(prev => prev ? { ...prev, why: `🤖 ${agentStatus}: ${why}` } : null);
         
         // Poll for fresh content every 5 seconds
         const pollInterval = setInterval(async () => {
