@@ -152,6 +152,57 @@ Resources:
             Path: /bootstrap
             Method: GET
 
+  # API: generate fresh content with real agents
+  GenerateFreshFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: api/
+      Handler: handlers.generate_fresh
+      Timeout: 30
+      Environment:
+        Variables:
+          BUCKET: !Ref AssetsBucket
+          CURIO_TABLE: !Ref CurioTable
+          CORS_ALLOW_ORIGIN: "*"
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref CurioTable
+        - S3ReadPolicy:
+            BucketName: !Ref AssetsBucket
+        - Statement:
+            - Effect: Allow
+              Action:
+                - bedrock:InvokeModel
+              Resource: "*"
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            RestApiId: !Ref NewsApi
+            Path: /generate-fresh
+            Method: POST
+
+  # API: get agent generation status
+  AgentStatusFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: api/
+      Handler: handlers.agent_status
+      Environment:
+        Variables:
+          CURIO_TABLE: !Ref CurioTable
+          CORS_ALLOW_ORIGIN: "*"
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref CurioTable
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            RestApiId: !Ref NewsApi
+            Path: /agent-status
+            Method: GET
+
   # API: list latest audio/scripts with presigned URLs
   ListLatestFunction:
     Type: AWS::Serverless::Function
