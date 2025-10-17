@@ -565,3 +565,90 @@ body {
 audio {
   display: none;
 }
+/*
+ Judge-Friendly Demo Section */
+.demo-section {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 20px;
+  padding: 2rem;
+  margin: 2rem 0;
+  color: white;
+  text-align: center;
+}
+
+.demo-section h2 {
+  margin-bottom: 0.5rem;
+  font-size: 1.5rem;
+}
+
+.demo-section p {
+  margin-bottom: 1.5rem;
+  opacity: 0.9;
+}
+
+/* AudioPlayer Styles */
+.curio-audio {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border-radius: 15px;
+  padding: 1.5rem;
+  margin: 1rem 0;
+}
+
+.curio-audio button {
+  background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+  color: white;
+  border: none;
+  padding: 1rem 2rem;
+  border-radius: 50px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-bottom: 1rem;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.curio-audio button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+.curio-audio button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.curio-audio audio {
+  width: 100%;
+  margin: 1rem 0;
+  border-radius: 10px;
+}
+
+.provenance {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  padding: 1rem;
+  margin-top: 1rem;
+  text-align: left;
+}
+
+.provenance p {
+  margin: 0.5rem 0;
+  font-size: 0.9rem;
+}
+
+.provenance strong {
+  color: #ffd700;
+}
+
+.provenance a {
+  color: #87ceeb;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.provenance a:hover {
+  text-decoration: underline;
+}

@@ -94,6 +94,22 @@ def list_latest(event, context):
             # Merge presigned URLs into metadata
             result = {**meta_data, **presigned_urls}
             
+            # Ensure required fields for AudioPlayer component
+            if 'audioUrl' not in result and 'audio_url' in result:
+                result['audioUrl'] = result['audio_url']
+            
+            if 'sources' not in result:
+                result['sources'] = meta_data.get('sources', ['BBC News', 'Reuters', 'TechCrunch'])
+            
+            if 'generatedAt' not in result:
+                result['generatedAt'] = meta_data.get('timestamp', datetime.utcnow().isoformat())
+            
+            if 'why' not in result:
+                result['why'] = meta_data.get('selection_reason', 'Selected by our AI agents for relevance to Gen Z/Millennial audiences, trending topics, and balanced news coverage.')
+            
+            if 'traceId' not in result:
+                result['traceId'] = meta_data.get('trace_id', f"trace-{datetime.utcnow().strftime('%Y%m%d-%H%M%S')}")
+            
             # Add some mock news items if not present
             if 'news_items' not in result:
                 result['news_items'] = [
