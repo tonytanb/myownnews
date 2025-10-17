@@ -1,0 +1,29 @@
+{
+  "providers": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-curionews-dev-4accf-authRole",
+      "UnauthRoleArn": "arn:aws:iam::385098538878:role/amplify-curionews-dev-4accf-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::385098538878:role/amplify-curionews-dev-4accf-authRole",
+      "Region": "us-east-1",
+      "DeploymentBucketName": "amplify-curionews-dev-4accf-deployment",
+      "UnauthRoleName": "amplify-curionews-dev-4accf-unauthRole",
+      "StackName": "amplify-curionews-dev-4accf",
+      "StackId": "arn:aws:cloudformation:us-east-1:385098538878:stack/amplify-curionews-dev-4accf/4c505700-aa29-11f0-bda1-12f4769e453b",
+      "AmplifyAppId": "d1w0yu6wlhvb6e"
+    }
+  },
+  "hosting": {
+    "amplifyhosting": {
+      "service": "amplifyhosting",
+      "providerPlugin": "awscloudformation",
+      "type": "manual",
+      "providerMetadata": {
+        "s3TemplateURL": "https://s3.amazonaws.com/amplify-curionews-dev-4accf-deployment/amplify-cfn-templates/hosting/amplifyhosting-template.json",
+        "logicalId": "hostingamplifyhosting"
+      },
+      "lastPushTimeStamp": "2025-10-16T02:32:33.234Z",
+      "output": {},
+      "lastPushDirHash": "ahBoFlNrTrvP1lrA7XJzUaIIm0k="
+    }
+  }
+}
