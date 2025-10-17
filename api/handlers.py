@@ -1,13 +1,17 @@
 import json
 import boto3
 import os
-from datetime import datetime
+import time
+from datetime import datetime, timedelta
 from botocore.exceptions import ClientError
 
 s3 = boto3.client('s3')
+dynamodb = boto3.client('dynamodb')
 BUCKET = os.getenv('BUCKET')
+CURIO_TABLE = os.getenv('CURIO_TABLE')
 CORS_ALLOW_ORIGIN = os.getenv('CORS_ALLOW_ORIGIN', '*')
 PRESIGN_EXPIRES = int(os.getenv('PRESIGN_EXPIRES', '1200'))
+STALE_MINUTES = 10  # Content is stale after 10 minutes
 
 def cors_headers():
     return {
@@ -16,6 +20,125 @@ def cors_headers():
         'Access-Control-Allow-Headers': 'Content-Type, Authorization',
         'Access-Control-Max-Age': '86400'
     }
+
+def is_stale(generated_at_str, minutes=STALE_MINUTES):
+    """Check if content is older than specified minutes"""
+    try:
+        generated_at = datetime.fromisoformat(generated_at_str.replace('Z', '+00:00'))
+        now = datetime.now(generated_at.tzinfo)
+        return (now - generated_at).total_seconds() > (minutes * 60)
+    except:
+        return True
+
+def try_acquire_lock():
+    """Try to acquire a generation lock using DynamoDB conditional put"""
+    try:
+        expires_at = int(time.time()) + 600  # 10 minute TTL
+        dynamodb.put_item(
+            TableName=CURIO_TABLE,
+            Item={
+                'pk': {'S': 'generation#lock'},
+                'status': {'S': 'RUNNING'},
+                'expiresAt': {'N': str(expires_at)},
+                'startedAt': {'S': datetime.utcnow().isoformat()}
+            },
+            ConditionExpression='attribute_not_exists(pk) OR expiresAt < :now',
+            ExpressionAttributeValues={
+                ':now': {'N': str(int(time.time()))}
+            }
+        )
+        return True
+    except ClientError as e:
+        if e.response['Error']['Code'] == 'ConditionalCheckFailedException':
+            return False
+        raise
+
+def get_cached_brief():
+    """Get the latest cached brief from DynamoDB"""
+    try:
+        response = dynamodb.get_item(
+            TableName=CURIO_TABLE,
+            Key={'pk': {'S': 'brief#latest'}}
+        )
+        if 'Item' in response:
+            item = response['Item']
+            return {
+                'audioUrl': item.get('audioUrl', {}).get('S', ''),
+                'sources': json.loads(item.get('sources', {}).get('S', '[]')),
+                'generatedAt': item.get('generatedAt', {}).get('S', ''),
+                'why': item.get('why', {}).get('S', ''),
+                'traceId': item.get('traceId', {}).get('S', ''),
+                'script': item.get('script', {}).get('S', ''),
+                'news_items': json.loads(item.get('news_items', {}).get('S', '[]'))
+            }
+    except Exception as e:
+        print(f"Error getting cached brief: {e}")
+    return None
+
+def bootstrap(event, context):
+    """Bootstrap endpoint - serves cached content and optionally starts fresh generation"""
+    try:
+        # Get cached brief
+        cached_brief = get_cached_brief()
+        
+        if not cached_brief:
+            # No cached content, return demo data
+            demo_brief = {
+                'audioUrl': 'https://www.soundjay.com/misc/sounds/bell-ringing-05.wav',
+                'sources': ['BBC News', 'Reuters', 'TechCrunch', 'NPR'],
+                'generatedAt': datetime.utcnow().isoformat(),
+                'why': 'Demo: AI agents are preparing your personalized news briefing...',
+                'traceId': f"demo-{int(time.time())}",
+                'script': 'Welcome to Curio News! Our AI agents are curating fresh content for you.',
+                'news_items': [
+                    {
+                        "title": "AI Agents Preparing Your Brief",
+                        "category": "DEMO",
+                        "summary": "Our 6 specialized Bedrock Agents are working to curate your personalized news.",
+                        "full_text": "The News Fetcher, Content Curator, Favorite Selector, Script Generator, Media Enhancer, and Weekend Events agents are collaborating to create your perfect briefing.",
+                        "image": "https://images.unsplash.com/photo-1677442136019-21780ecad995?w=400"
+                    }
+                ],
+                'shouldRefresh': True,
+                'agentStatus': 'STARTING'
+            }
+            
+            # Try to start generation
+            if try_acquire_lock():
+                demo_brief['generationStarted'] = True
+                demo_brief['agentStatus'] = 'FETCHING_NEWS'
+            
+            return {
+                'statusCode': 200,
+                'headers': cors_headers(),
+                'body': json.dumps(demo_brief)
+            }
+        
+        # Check if content is stale
+        should_refresh = is_stale(cached_brief['generatedAt'])
+        cached_brief['shouldRefresh'] = should_refresh
+        
+        if should_refresh and try_acquire_lock():
+            cached_brief['generationStarted'] = True
+            cached_brief['agentStatus'] = 'FETCHING_NEWS'
+            cached_brief['why'] = 'Serving cached content while AI agents prepare fresh briefing...'
+        else:
+            cached_brief['generationStarted'] = False
+            cached_brief['agentStatus'] = 'READY'
+        
+        return {
+            'statusCode': 200,
+            'headers': cors_headers(),
+            'body': json.dumps(cached_brief)
+        }
+        
+    except Exception as e:
+        print(f"Bootstrap error: {e}")
+        return {
+            'statusCode': 500,
+            'headers': cors_headers(),
+            'body': json.dumps({'error': str(e)})
+        }
 
 def list_latest(event, context):
     """Get the most recent audio/script files with presigned URLs"""

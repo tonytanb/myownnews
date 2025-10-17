@@ -47,6 +47,22 @@ Globals:
     Tracing: Active
 
 Resources:
+  # DynamoDB table for caching and locks
+  CurioTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub "${AWS::StackName}-curio-cache"
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: pk
+          AttributeType: S
+      KeySchema:
+        - AttributeName: pk
+          KeyType: HASH
+      TimeToLiveSpecification:
+        AttributeName: expiresAt
+        Enabled: true
+
   # API Gateway for serving presigned URLs
   NewsApi:
     Type: AWS::Serverless::Api
@@ -111,6 +127,30 @@ Resources:
         #     Schedule: cron(0 13 * * ? *)
         #     Name: MyOwnNewsDaily
         #     Enabled: false
+
+  # API: bootstrap endpoint for smart caching
+  BootstrapFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: api/
+      Handler: handlers.bootstrap
+      Environment:
+        Variables:
+          BUCKET: !Ref AssetsBucket
+          CURIO_TABLE: !Ref CurioTable
+          CORS_ALLOW_ORIGIN: "*"
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref CurioTable
+        - S3ReadPolicy:
+            BucketName: !Ref AssetsBucket
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            RestApiId: !Ref NewsApi
+            Path: /bootstrap
+            Method: GET
 
   # API: list latest audio/scripts with presigned URLs
   ListLatestFunction:
