@@ -1,0 +1,136 @@
+{
+  "overall_success": false,
+  "success_rate": 44.44444444444444,
+  "total_tests": 9,
+  "passed_tests": 4,
+  "test_results": [
+    {
+      "test": "API Bootstrap",
+      "success": false,
+      "message": "Missing fields: ['word_timings']",
+      "timestamp": "2025-10-20T13:06:18.702982",
+      "data": {
+        "audioUrl": "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav",
+        "sources": [
+          "BBC News",
+          "Reuters",
+          "TechCrunch",
+          "NPR",
+          "The Verge"
+        ],
+        "generatedAt": "2025-10-20T16:04:08.521109",
+        "why": "Serving cached content while AI agents prepare fresh briefing...",
+        "traceId": "agents-7812c9d3",
+        "script": "Alright, let's dive into what's happening today. Honestly, this first story is pretty wild - get this, Waymo's self-driving cars were caught on camera driving around a stopped school bus in Atlanta. Ngl, that's a major yikes for the safety of these autonomous vehicles. But Waymo says they've already updated the software, so hopefully they can avoid any more sketchy incidents like that.\n\nNext up, we've got some big news in the world of AI and healthcare. A platform called OpenEvidence, which is basically the ChatGPT for doctors, just raised $200 million at a $6 billion valuation. Lowkey, that's a huge deal. The platform helps medical professionals quickly access existing medical knowledge to treat patients better. Pretty cool, right?\n\nAnd in some gaming news, the mobile version of The Sims is shutting down next year. Honestly, that's a bummer for all the Sims fans out there. But the franchise is going through some changes, so maybe we'll see the beloved game make a comeback in a new way soon.\n\nFinally, let's talk about this new handheld gaming device from Anbernic. It's basically a clone of the Nintendo DS, but get this - it's gonna be cheaper than the original. Ngl, that's pretty impressive. Looks like it can play a bunch of classic DS and 3DS games, so it could be a fun little retro gaming device.\n\nAlright, that's the news for today, folks. Stay tuned for more updates, and let me know if you have any other questions!",
+        "news_items": [
+          {
+            "title": "Regulators probe Waymo after its robotaxi drove around a stopped school bus",
+            "summary": "The incident happened in Atlanta, Georgia earlier this month. Waymo says it has already updated the software on its robotaxis.",
+            "category": "TECHNOLOGY",
+            "relevance_score": 0.9,
+            "source": "TechCrunch",
+            "selection_reason": "This story provides an important update on the safety and regulation of self-driving technology, which is a key technology trend."
+          },
+          {
+            "title": "OpenEvidence, the ChatGPT for doctors, raises $200M at $6B valuation",
+            "summary": "Trained on medical journals from JAMA and the New England Journal of Medicine, the platform helps users quickly get answers to existing medical knowledge to help treat patients. Verified medical professionals can access OpenEvidence's tool, which is supported by advertising, for free.",
+            "category": "TECHNOLOGY",
+            "relevance_score": 0.85,
+            "source": "TechCrunch",
+            "selection_reason": "This story highlights the application of AI technology in the medical field, which is an important and emerging area."
+          },
+          {
+            "title": "The Sims Mobile is shutting down next year",
+            "summary": "The Sims is in a period of transition \u2014 and as part of that, the ongoing mobile version will be shutting down in a few months. EA announced that today's update for The Sims Mobile will be its last, and that on January 20th, 2026 the game \"will no longer be accessible to play and [&#8230;]\"",
+            "category": "TECHNOLOGY",
+            "relevance_score": 0.8,
+            "source": "The Verge",
+            "selection_reason": "This story provides an update on the popular Sims franchise, which is relevant to the gaming and technology audience."
+          },
+          {
+            "title": "Anbernic&#8217;s DS clone will be cheaper than Nintendo&#8217;s original",
+            "summary": "Anbernic has shared footage of its upcoming RG DS dual-screen clamshell handheld playing a selection of emulated games, including stylus-driven titles like Kirby: Canvas Curse from the Nintendo DS and 3DS games like Shovel Knight. Anbernic announced the RG DS earlier this month with a price tag that will be under $100 and four color [&#8230;]",
+            "category": "TECHNOLOGY",
+            "relevance_score": 0.75,
+            "source": "The Verge",
+            "selection_reason": "This story covers an interesting new gaming hardware product, which provides diversity from the other technology stories."
+          },
+          {
+            "title": "San Francisco Mayor Daniel Lurie is coming to TechCrunch Disrupt 2025",
+            "summary": "Newly elected Mayor Daniel Lurie steps onto the Disrupt stage at TechCrunch Disrupt 2025, October 27-29 at Moscone West, in a homecoming of sorts for both tech and the city that helped define it. Register now to save and catch this live discussion.",
+            "category": "POLITICS",
+            "relevance_score": 0.7,
+            "source": "TechCrunch",
+            "selection_reason": "This story provides a political angle by featuring the new mayor of San Francisco, which is a key tech hub, speaking at a major tech conference."
+          }
+        ],
+        "shouldRefresh": true,
+        "generationStarted": true,
+        "agentStatus": "FETCHING_NEWS"
+      }
+    },
+    {
+      "test": "API CORS",
+      "success": true,
+      "message": "All CORS headers present",
+      "timestamp": "2025-10-20T13:06:18.778453",
+      "data": null
+    },
+    {
+      "test": "API Generate Fresh",
+      "success": false,
+      "message": "Exception: HTTPSConnectionPool(host='nqot0dir0h.execute-api.us-west-2.amazonaws.com', port=443): Read timed out. (read timeout=15)",
+      "timestamp": "2025-10-20T13:06:33.782533",
+      "data": null
+    },
+    {
+      "test": "API Agent Status",
+      "success": false,
+      "message": "No runId provided",
+      "timestamp": "2025-10-20T13:06:33.782596",
+      "data": null
+    },
+    {
+      "test": "API Trace",
+      "success": true,
+      "message": "Valid trace response for demo-trace-12345",
+      "timestamp": "2025-10-20T13:06:35.356718",
+      "data": null
+    },
+    {
+      "test": "Frontend Access",
+      "success": false,
+      "message": "Exception: HTTPSConnectionPool(host='main.d2ixqhqhqhqhqh.amplifyapp.com', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"<urllib3.connection.HTTPSConnection object at 0x10aaf20d0>: Failed to resolve 'main.d2ixqhqhqhqhqh.amplifyapp.com' ([Errno 8] nodename nor servname provided, or not known)\"))",
+      "timestamp": "2025-10-20T13:06:35.412006",
+      "data": null
+    },
+    {
+      "test": "Audio URL",
+      "success": false,
+      "message": "Exception: HTTPSConnectionPool(host='www.soundjay.com', port=443): Read timed out. (read timeout=10)",
+      "timestamp": "2025-10-20T13:06:46.902012",
+      "data": null
+    },
+    {
+      "test": "Content Quality",
+      "success": true,
+      "message": "Good tone quality (score: 7)",
+      "timestamp": "2025-10-20T13:06:47.109915",
+      "data": null
+    },
+    {
+      "test": "Error Handling",
+      "success": true,
+      "message": "Proper HTTP error code: 403",
+      "timestamp": "2025-10-20T13:06:47.177271",
+      "data": null
+    }
+  ],
+  "critical_systems": {
+    "api_bootstrap": false,
+    "frontend": false,
+    "cors": true,
+    "agent_orchestration": false,
+    "audio_playback": false
+  }
+}

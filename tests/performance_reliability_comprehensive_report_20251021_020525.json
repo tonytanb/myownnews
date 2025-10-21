@@ -1,0 +1,132 @@
+{
+  "overall_success": false,
+  "test_duration": 361.457747,
+  "start_time": "2025-10-21T01:59:23.815709",
+  "end_time": "2025-10-21T02:05:25.273456",
+  "test_summary": {
+    "performance_reliability": {
+      "success": false,
+      "execution_time": 223.54054808616638,
+      "status": "\u274c FAIL"
+    },
+    "comprehensive_e2e": {
+      "success": false,
+      "execution_time": 82.66787004470825,
+      "status": "\u274c FAIL"
+    },
+    "agent_orchestration": {
+      "success": false,
+      "execution_time": 15.299580097198486,
+      "status": "\u274c FAIL"
+    },
+    "performance_benchmarks": {
+      "success": true,
+      "execution_time": 39.946792125701904,
+      "status": "\u2705 PASS"
+    }
+  },
+  "performance_metrics": {
+    "Bootstrap Performance": "Good",
+    "Demo Ready": "Yes"
+  },
+  "requirements_validation": {
+    "Requirement 5.1: Fast and reliable content generation": false,
+    "Requirement 5.2: Accurate progress indicators": false,
+    "Requirement 5.3: Complete loading state replacement": false
+  },
+  "detailed_results": {
+    "performance_reliability": {
+      "success": false,
+      "return_code": 1,
+      "stdout": "\ud83d\ude80 Starting Performance and Reliability Testing\nAPI URL: https://nqot0dir0h.execute-api.us-west-2.amazonaws.com/prod\nFrontend URL: http://curio-news-frontend-1760997974.s3-website-us-west-2.amazonaws.com\nConcurrent Users: 5\nReliability Runs: 5\nMax Agent Time: 60s\nMax Total Time: 300s\n================================================================================\n\n\ud83d\ude80 Test 1: Concurrent Load Performance\n\ud83d\ude80 Testing concurrent load with 5 simultaneous users...\n\u2705 PASS Concurrent Load Performance: 100% success, 2.07s avg response\n\n\u23f1\ufe0f Test 2: Agent Execution Time Requirements\n\u23f1\ufe0f Testing agent execution time requirements...\n\u274c FAIL Agent Execution Times: Workflow failed: HTTPSConnectionPool(host='nqot0dir0h.execute-api.us-west-2.amazonaws.com', port=443): Read timed out. (read timeout=20)\n\n\ud83d\udd0d Test 3: Content Quality Consistency\n\ud83d\udd0d Testing content quality consistency over 5 runs...\n   Run 1/5...\n   Run 1 failed: HTTPSConnectionPool(host='nqot0dir0h.execute-api.us-west-2.amazonaws.com', port=443): Read timed out. (read timeout=20)\n   Run 2/5...\n   Run 2 failed: HTTPSConnectionPool(host='nqot0dir0h.execute-api.us-west-2.amazonaws.com', port=443): Read timed out. (read timeout=20)\n   Run 3/5...\n   Run 3 failed: HTTPSConnectionPool(host='nqot0dir0h.execute-api.us-west-2.amazonaws.com', port=443): Read timed out. (read timeout=20)\n   Run 4/5...\n   Run 4 failed: HTTPSConnectionPool(host='nqot0dir0h.execute-api.us-west-2.amazonaws.com', port=443): Read timed out. (read timeout=20)\n   Run 5/5...\n   Run 5 failed: HTTPSConnectionPool(host='nqot0dir0h.execute-api.us-west-2.amazonaws.com', port=443): Read timed out. (read timeout=20)\n\u274c FAIL Content Quality Consistency: Need at least 2 successful runs, got 0\n\n\ud83d\udd04 Test 4: System Stability Under Load\n\ud83d\udd04 Testing system stability under extended load...\n   Load cycle 1/3...\n   Load cycle 2/3...\n   Load cycle 3/3...\n\u274c FAIL System Stability Under Load: Only 0% success rate under load\n   Debug data: {\n  \"total_workflows\": 9,\n  \"successful_workflows\": 0,\n  \"success_rate\": 0.0,\n  \"test_duration\": 80.57203030586243\n}...\n\n================================================================================\n\ud83d\udcca Performance and Reliability Test Results\n================================================================================\nTotal Tests: 4\nPassed: 1\nFailed: 3\nSuccess Rate: 25.0%\n\n\ud83d\udccb Test Details:\n  \u2705 Concurrent Load Performance: 100% success, 2.07s avg response\n  \u274c Agent Execution Times: Workflow failed: HTTPSConnectionPool(host='nqot0dir0h.execute-api.us-west-2.amazonaws.com', port=443): Read timed out. (read timeout=20)\n  \u274c Content Quality Consistency: Need at least 2 successful runs, got 0\n  \u274c System Stability Under Load: Only 0% success rate under load\n\n\ud83d\udcc8 Requirements Validation:\n  \u2705 Requirement 5.1: Fast and reliable content generation\n  \u274c Requirement 5.2: Accurate progress indicators\n  \u274c Requirement 5.3: Complete loading state replacement\n\n\u26a0\ufe0f OVERALL STATUS: PERFORMANCE ISSUES DETECTED\n\nFailed Areas:\n  \u274c Agent Execution Times: Workflow failed: HTTPSConnectionPool(host='nqot0dir0h.execute-api.us-west-2.amazonaws.com', port=443): Read timed out. (read timeout=20)\n  \u274c Content Quality Consistency: Need at least 2 successful runs, got 0\n  \u274c System Stability Under Load: Only 0% success rate under load\n\n\ud83d\udcc4 Detailed results saved to: tests/performance_reliability_results_20251021_020307.json\n",
+      "stderr": "",
+      "execution_time": 223.54054808616638
+    },
+    "comprehensive_e2e": {
+      "success": false,
+      "return_code": 1,
+      "stdout": "\ud83d\ude80 Starting Comprehensive End-to-End Validation\nAPI URL: https://nqot0dir0h.execute-api.us-west-2.amazonaws.com/prod\nFrontend URL: http://curio-news-frontend-1760997974.s3-website-us-west-2.amazonaws.com\nReliability Runs: 3\n================================================================================\n\n\ud83c\udfe5 Test 1: System Health Check\n\ud83c\udfe5 Testing system health...\n\u2705 PASS System Health Check: Healthy components: API Bootstrap, Frontend, Agent Status\n\n\ud83d\udd04 Test 2: Reliability Testing (3 runs)\n\ud83d\udd04 Testing reliability with 3 complete workflow runs...\n\n--- Reliability Run 1/3 ---\n\ud83d\udd04 Testing complete workflow (Run 1)...\n   Step 1: Starting content generation...\n\u274c Run 1 failed at generation_start: HTTPSConnectionPool(host='nqot0dir0h.execute-api.us-west-2.amazonaws.com', port=443): Read timed out. (read timeout=20)\n   Waiting 10 seconds before next run...\n\n--- Reliability Run 2/3 ---\n\ud83d\udd04 Testing complete workflow (Run 2)...\n   Step 1: Starting content generation...\n\u274c Run 2 failed at generation_start: HTTPSConnectionPool(host='nqot0dir0h.execute-api.us-west-2.amazonaws.com', port=443): Read timed out. (read timeout=20)\n   Waiting 10 seconds before next run...\n\n--- Reliability Run 3/3 ---\n\ud83d\udd04 Testing complete workflow (Run 3)...\n   Step 1: Starting content generation...\n\u274c Run 3 failed at generation_start: HTTPSConnectionPool(host='nqot0dir0h.execute-api.us-west-2.amazonaws.com', port=443): Read timed out. (read timeout=20)\n\u274c FAIL Reliability Testing: POOR reliability: 0% success rate\n\n\u26a1 Test 3: Performance Benchmarks\n\u26a1 Testing performance benchmarks...\n\u274c FAIL Performance Benchmarks: No successful runs to analyze\n\n\ud83d\udd0d Test 4: Content Quality Consistency\n\ud83d\udd0d Testing content quality consistency...\n\u274c FAIL Content Quality Consistency: Need at least 2 successful runs\n\n================================================================================\n\ud83d\udcca Comprehensive End-to-End Validation Summary\n================================================================================\nTotal Tests: 4\nPassed: 1\nFailed: 3\nSuccess Rate: 25.0%\nWorkflow Reliability: 0% (0/3 runs)\nAverage Workflow Time: 0.0s\nReliability Status: POOR\n\n\ud83d\udccb Test Details:\n  \u2705 System Health Check: Healthy components: API Bootstrap, Frontend, Agent Status\n  \u274c Reliability Testing: POOR reliability: 0% success rate\n  \u274c Performance Benchmarks: No successful runs to analyze\n  \u274c Content Quality Consistency: Need at least 2 successful runs\n\n\u26a0\ufe0f OVERALL STATUS: SYSTEM NEEDS ATTENTION\n\nFailed Areas:\n  \u274c Reliability Testing: POOR reliability: 0% success rate\n  \u274c Performance Benchmarks: No successful runs to analyze\n  \u274c Content Quality Consistency: Need at least 2 successful runs\n  \u274c Workflow Reliability: 0% (need \u226560%)\n\n\ud83d\udcc4 Detailed results saved to: tests/comprehensive_validation_results_20251021_020429.json\n",
+      "stderr": "",
+      "execution_time": 82.66787004470825
+    },
+    "agent_orchestration": {
+      "success": false,
+      "return_code": 1,
+      "stdout": "\ud83d\ude80 Starting Agent Orchestration End-to-End Testing\nAPI URL: https://nqot0dir0h.execute-api.us-west-2.amazonaws.com/prod\nExpected Agents: NEWS_FETCHER, CONTENT_CURATOR, FAVORITE_SELECTOR, SCRIPT_GENERATOR, MEDIA_ENHANCER, WEEKEND_EVENTS\n================================================================================\n\n\ud83c\udfac Test 1: Agent Orchestration Startup\n\ud83d\ude80 Starting agent orchestration...\n\u274c FAIL Agent Orchestration Startup: Exception: HTTPSConnectionPool(host='nqot0dir0h.execute-api.us-west-2.amazonaws.com', port=443): Read timed out. (read timeout=15)\n\u274c Cannot continue without valid runId\n\n================================================================================\n\ud83d\udcca Agent Orchestration Test Results Summary\n================================================================================\nRun ID: N/A\nTotal Tests: 1\nPassed: 0\nFailed: 1\nSuccess Rate: 0.0%\n\n\ud83d\udccb Test Details:\n  \u274c Agent Orchestration Startup: Exception: HTTPSConnectionPool(host='nqot0dir0h.execute-api.us-west-2.amazonaws.com', port=443): Read timed out. (read timeout=15)\n\n\u26a0\ufe0f OVERALL STATUS: AGENT ORCHESTRATION NEEDS ATTENTION\n\nFailed Tests:\n  \u274c Agent Orchestration Startup: Exception: HTTPSConnectionPool(host='nqot0dir0h.execute-api.us-west-2.amazonaws.com', port=443): Read timed out. (read timeout=15)\n\n\ud83d\udcc4 Detailed results saved to: tests/agent_orchestration_results_20251021_020445.json\n",
+      "stderr": "",
+      "execution_time": 15.299580097198486
+    },
+    "performance_benchmarks": {
+      "success": true,
+      "return_code": 0,
+      "stdout": "\u26a1 Starting Performance Testing\nAPI URL: https://nqot0dir0h.execute-api.us-west-2.amazonaws.com/prod\nFrontend URL: http://curio-news-frontend-1760997974.s3-website-us-west-2.amazonaws.com\n============================================================\n   Testing bootstrap endpoint performance...\n   Sample 1: 0.361s (HTTP 200)\n   Sample 2: 0.260s (HTTP 200)\n   Sample 3: 0.354s (HTTP 200)\n   Sample 4: 0.265s (HTTP 200)\n   Sample 5: 0.256s (HTTP 200)\n\u2705 PASS Bootstrap Performance: Excellent: 0.299s avg (Judge-ready)\n   Testing agent orchestration performance...\n   Sample 1: Exception - HTTPSConnectionPool(host='nqot0dir0h.execute-api.u...\n   Sample 2: Exception - HTTPSConnectionPool(host='nqot0dir0h.execute-api.u...\n\u274c FAIL Agent Orchestration Performance: No successful requests\n   Testing frontend load performance...\n   Sample 1: 0.252s\n   Sample 2: 0.105s\n   Sample 3: 0.105s\n\u2705 PASS Frontend Performance: Fast load: 0.154s avg\n   Testing caching effectiveness...\n   First request: 0.476s\n   Second request: 0.217s\n   Improvement: 54.4%\n\u2705 PASS Caching Effectiveness: Caching working: 54.4% faster\n   Testing concurrent request handling...\n   Successful requests: 5/5\n   Average response time: 0.666s\n\u2705 PASS Concurrent Load: 100% success rate\n   Testing judge demo scenarios...\n   Cold Start: 0.341s (target: <2.0s)\n   Cached Request: 0.211s (target: <1.0s)\n\u2705 PASS Judge Demo Readiness: 2/2 scenarios ready\n\n============================================================\n\ud83d\udcca Performance Test Results\nTotal Tests: 6\nPassed: 5\nSuccess Rate: 83.3%\n\ud83d\ude80 PERFORMANCE STATUS: OPTIMIZED FOR DEMO\n\n\ud83d\udcc4 Performance results saved to: tests/performance_results_20251021_020525.json\n",
+      "stderr": "",
+      "execution_time": 39.946792125701904,
+      "detailed_results": {
+        "performance_ready": true,
+        "success_rate": 83.33333333333334,
+        "total_tests": 6,
+        "passed_tests": 5,
+        "test_results": [
+          {
+            "test": "Bootstrap Performance",
+            "success": true,
+            "message": "Excellent: 0.299s avg (Judge-ready)",
+            "timestamp": "2025-10-21T02:04:49.449881",
+            "data": null
+          },
+          {
+            "test": "Agent Orchestration Performance",
+            "success": false,
+            "message": "No successful requests",
+            "timestamp": "2025-10-21T02:05:19.554069",
+            "data": null
+          },
+          {
+            "test": "Frontend Performance",
+            "success": true,
+            "message": "Fast load: 0.154s avg",
+            "timestamp": "2025-10-21T02:05:21.528546",
+            "data": null
+          },
+          {
+            "test": "Caching Effectiveness",
+            "success": true,
+            "message": "Caching working: 54.4% faster",
+            "timestamp": "2025-10-21T02:05:22.726174",
+            "data": null
+          },
+          {
+            "test": "Concurrent Load",
+            "success": true,
+            "message": "100% success rate",
+            "timestamp": "2025-10-21T02:05:24.688848",
+            "data": null
+          },
+          {
+            "test": "Judge Demo Readiness",
+            "success": true,
+            "message": "2/2 scenarios ready",
+            "timestamp": "2025-10-21T02:05:25.240608",
+            "data": null
+          }
+        ],
+        "critical_performance": {
+          "bootstrap": true,
+          "demo_ready": true,
+          "frontend_load": true
+        }
+      }
+    }
+  },
+  "task_completion": {
+    "task_id": "7.3",
+    "task_name": "Conduct performance and reliability testing",
+    "requirements_tested": [
+      "5.1",
+      "5.2",
+      "5.3"
+    ],
+    "completion_status": "ISSUES_DETECTED"
+  }
+}

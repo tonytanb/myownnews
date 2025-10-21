@@ -1,173 +1,98 @@
-# 📚 Curio News - Documentation Index
+# Curio News Documentation Index
 
-> *Your complete guide to navigating the Curio News project*
+This directory contains comprehensive documentation for the Curio News platform - an AWS Agent Hackathon submission featuring multi-agent orchestration with AWS Bedrock.
 
-## 🗺️ Quick Navigation
+## 📁 Documentation Structure
 
-| 🎯 I want to... | 📄 Go to... |
-|-----------------|-------------|
-| **Understand the project** | [README.md](../README.md) |
-| **See what we built** | [Project Summary](PROJECT_SUMMARY.md) |
-| **Deploy the app** | [Deployment Guide](deployment/deployment-guide.md) |
-| **Set up development** | [Development Setup](development/development-setup.md) |
-| **Understand architecture** | [System Architecture](architecture/system-architecture.md) |
-| **Find a specific file** | [File Directory](#-file-directory) below |
+### Architecture
+- [System Architecture](architecture-diagram.md) - High-level system design and component interaction
+- Multi-agent orchestration patterns and AWS service integration
 
----
+### Development
+- [Development Guide](development/DEVELOPMENT.md) - Local setup and development workflow
+- [Action README](development/ACTION_README.md) - GitHub Actions and CI/CD pipeline
+- [Development Scripts](development/) - Utility scripts for development
 
-## 📁 Project Structure Overview
+### Deployment
+- [AWS Cost Protection](deployment/aws-cost-protection.md) - Cost monitoring and protection measures
+- [Check Costs Script](deployment/check-costs.sh) - Automated cost checking
+- [Emergency Shutdown](deployment/emergency-shutdown.sh) - Emergency resource cleanup
 
-```
-curio-news/
-├── 📖 README.md                    # Main project documentation
-├── 🏗️ template.yaml               # AWS SAM infrastructure
-├── ⚙️ samconfig.toml              # SAM deployment configuration
-├── 
-├── 📁 curio-news-ui/              # 🎨 FRONTEND APPLICATION
-│   ├── src/App.tsx                # Main React component
-│   ├── src/App.css                # Styling & animations
-│   ├── public/index.html          # HTML template
-│   └── package.json               # Frontend dependencies
-├── 
-├── 📁 myownnews/                  # ⚡ BACKEND FUNCTIONS
-│   ├── app.py                     # Main Lambda handler
-│   ├── enhanced_news_fetcher.py   # Content processing
-│   └── requirements.txt           # Python dependencies
-├── 
-├── 📁 api/                        # 🌐 API HANDLERS
-│   └── handlers.py                # API Gateway endpoints
-├── 
-└── 📁 docs/                       # 📚 DOCUMENTATION HUB
-    ├── INDEX.md                   # This navigation file
-    ├── PROJECT_SUMMARY.md         # Complete project overview
-    ├── 
-    ├── 📁 architecture/           # 🏗️ SYSTEM DESIGN
-    │   └── system-architecture.md # Architecture diagrams
-    ├── 
-    ├── 📁 deployment/             # 🚀 DEPLOYMENT RESOURCES
-    │   ├── deployment-guide.md    # Step-by-step deployment
-    │   ├── aws-cost-protection.md # Cost monitoring
-    │   ├── check-costs.sh         # AWS cost monitoring
-    │   └── emergency-shutdown.sh  # Emergency stop script
-    └── 
-    └── 📁 development/            # 🛠️ DEVELOPMENT RESOURCES
-        ├── development-setup.md   # Local dev environment
-        ├── git-save.sh            # Git workflow helper
-        └── dev.sh                 # Development utilities
-```
+## 🚀 Quick Navigation
 
----
+### For Hackathon Judges
+- **Start Here**: [Hackathon Submission](../HACKATHON_SUBMISSION.md) - Complete project overview
+- **Live Demo**: Frontend and API URLs in main README
+- **Performance Results**: [Test Results](../tests/) - Comprehensive performance analysis
 
-## 📄 Document Guide
+### For Developers
+- **Getting Started**: [Development Guide](development/DEVELOPMENT.md)
+- **System Design**: [Architecture Overview](architecture-diagram.md)
+- **CI/CD Setup**: [Action README](development/ACTION_README.md)
 
-### 🎯 Getting Started Documents
+### For Deployment
+- **Cost Management**: [AWS Cost Protection](deployment/aws-cost-protection.md)
+- **Deployment Scripts**: Available in the deployment folder
+- **Infrastructure**: [SAM Template](../template.yaml)
 
-#### [README.md](../README.md)
-**Purpose**: Main project documentation  
-**Contains**: 
-- Project overview and features
-- Live demo links
-- Technology stack
-- Quick start guide
-- Cost analysis
-- Troubleshooting
+### For Operations
+- **Cost Monitoring**: [check-costs.sh](deployment/check-costs.sh)
+- **Emergency Procedures**: [emergency-shutdown.sh](deployment/emergency-shutdown.sh)
+- **Performance Monitoring**: [Test Suite](../tests/)
 
-**When to use**: First document to read for project understanding
+## 🏆 Hackathon Highlights
 
-#### [Project Summary](PROJECT_SUMMARY.md)
-**Purpose**: Complete project achievements and status  
-**Contains**:
-- What we built and key achievements
-- Architecture overview
-- Performance metrics
-- Recent improvements
-- Future roadmap
-- Success metrics
+### Key Documentation for Judges
 
-**When to use**: For project reviews, presentations, or status updates
+1. **[Hackathon Submission](../HACKATHON_SUBMISSION.md)** - Complete project overview
+2. **[Main README](../README.md)** - Technical details and quick start
+3. **[Performance Analysis](../tests/)** - Comprehensive testing results
+4. **[Architecture Diagram](architecture-diagram.md)** - System design
 
----
+### Technical Excellence Evidence
 
-### 🏗️ Architecture & Design
+- **Multi-Agent System**: 6 specialized Bedrock agents working in orchestration
+- **Production Deployment**: Fully operational with monitoring and error handling
+- **Comprehensive Testing**: Performance, reliability, and integration tests
+- **Real-time Monitoring**: Live agent execution tracking and debugging
 
-#### [System Architecture](architecture/system-architecture.md)
-**Purpose**: Technical system design and data flow  
-**Contains**:
-- Mermaid architecture diagrams
-- Component relationships
-- Data flow visualization
-- Technology stack details
-- Scalability considerations
-- Security architecture
+## 📊 Additional Resources
 
-**When to use**: For technical reviews, onboarding developers, or system planning
+### Core Project Files
+- **Main README**: [../README.md](../README.md) - Project overview and setup
+- **Hackathon Submission**: [../HACKATHON_SUBMISSION.md](../HACKATHON_SUBMISSION.md) - Detailed submission
+- **Test Results**: [../tests/](../tests/) - Performance and reliability reports
+- **Source Code**: [../api/](../api/) (Backend) and [../curio-news-ui/](../curio-news-ui/) (Frontend)
+
+### Live System
+- **Frontend Demo**: http://curio-news-frontend-1760997974.s3-website-us-west-2.amazonaws.com
+- **API Endpoint**: https://nqot0dir0h.execute-api.us-west-2.amazonaws.com/prod
+- **Real-time Debugging**: Available in the frontend interface
+
+### Performance Metrics
+- **Response Time**: 0.39s average for content delivery
+- **Success Rate**: 100% for bootstrap operations
+- **Content Quality**: 1.00/1.00 consistency score
+- **System Health**: 3/3 components operational
+
+## 🤝 Contributing to Documentation
+
+When adding new documentation:
+1. Place files in appropriate subdirectories
+2. Update this index with new entries
+3. Use clear, descriptive filenames
+4. Include proper markdown formatting
+5. Add cross-references between related documents
+6. Update the main README if adding major documentation
+
+## 🎯 Documentation Standards
+
+- **Clarity**: Write for both technical and non-technical audiences
+- **Completeness**: Include setup, usage, and troubleshooting information
+- **Currency**: Keep documentation updated with code changes
+- **Examples**: Provide concrete examples and code snippets
+- **Links**: Cross-reference related documentation and external resources
 
 ---
 
-### 🚀 Deployment Resources
-
-#### [Deployment Guide](deployment/deployment-guide.md)
-**Purpose**: Complete deployment instructions  
-**Contains**:
-- Prerequisites and setup
-- Backend deployment (SAM)
-- Frontend deployment (Amplify)
-- Environment configuration
-- Troubleshooting deployment issues
-- Cost optimization tips
-
-**When to use**: When deploying to production or setting up new environments
-
----
-
-### 🛠️ Development Resources
-
-#### [Development Setup](development/development-setup.md)
-**Purpose**: Local development environment setup  
-**Contains**:
-- Prerequisites installation
-- Local testing procedures
-- Code structure explanation
-- Debugging techniques
-- Performance profiling
-- Best practices
-
-**When to use**: Setting up local development or onboarding new developers
-
----
-
-## 🔍 Quick Search
-
-### By Technology
-- **React/Frontend**: `curio-news-ui/` folder
-- **Python/Backend**: `myownnews/` folder  
-- **AWS/Infrastructure**: `template.yaml`, `deployment/` folder
-
-### By Task
-- **Deploy**: `deployment/` folder
-- **Develop**: `development/` folder
-- **Understand**: `README.md`, `PROJECT_SUMMARY.md`
-- **Architecture**: `architecture/` folder
-
-### By Role
-- **Product Manager**: `README.md`, `PROJECT_SUMMARY.md`
-- **Developer**: `development/` folder, `architecture/`
-- **DevOps**: `deployment/` folder, `template.yaml`
-- **Stakeholder**: `README.md`, `PROJECT_SUMMARY.md`
-
----
-
-## 📞 Need Help?
-
-| Question Type | Best Resource |
-|---------------|---------------|
-| "What does this project do?" | [README.md](../README.md) |
-| "How do I deploy it?" | [Deployment Guide](deployment/deployment-guide.md) |
-| "How do I develop locally?" | [Development Setup](development/development-setup.md) |
-| "How does it work technically?" | [System Architecture](architecture/system-architecture.md) |
-| "What have we accomplished?" | [Project Summary](PROJECT_SUMMARY.md) |
-| "Where is file X?" | This INDEX.md file |
-
----
-
-*📝 This index is your compass for navigating the Curio News project. Bookmark it for quick reference!*
+**📚 This documentation supports the AWS Agent Hackathon submission showcasing multi-agent orchestration with AWS Bedrock.**

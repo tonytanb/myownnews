@@ -3,12 +3,10 @@ from datetime import datetime, timezone
 
 REGION = os.getenv("AWS_REGION", "us-west-2")
 MODEL_ID = os.getenv("MODEL_ID", "amazon.titan-text-lite-v1")
-NEWS_API_KEY = os.getenv("NEWS_API_KEY")  # Keep for backward compatibility
-NEWSDATA_API_KEY = os.getenv("NEWSDATA_API_KEY", "")  # New free API
+NEWS_API_KEY = os.getenv("NEWS_API_KEY", "")  # Optional - RSS feeds work without it
 NEWS_CATEGORIES = [c.strip() for c in os.getenv("NEWS_CATEGORIES", "general,technology,business").split(",") if c.strip()]
 VOICE_ID = os.getenv("VOICE_ID", "Joanna")
 VOICE_PROVIDER = os.getenv("VOICE_PROVIDER", "polly")
-ELEVENLABS_API_KEY = os.getenv("ELEVENLABS_API_KEY", "")
 BUCKET = os.getenv("BUCKET")
 MAX_ARTICLES = int(os.getenv("MAX_ARTICLES", "8"))
 
@@ -78,32 +76,29 @@ def _pull_articles_from_rss():
     
     return items
 
-def _pull_articles_from_newsdata():
-    """Pull trending articles from NewsData.io API"""
+def _pull_articles_from_newsapi():
+    """Pull articles from NewsAPI.org if key is available"""
     items = []
     
-    # NewsData.io is free and works in production
-    newsdata_key = os.getenv("NEWSDATA_API_KEY", "")
-    if not newsdata_key:
-        print("No NewsData API key, skipping...")
+    if not NEWS_API_KEY:
+        print("No NewsAPI key, skipping...")
         return items
     
     try:
-        url = "https://newsdata.io/api/1/news"
+        url = "https://newsapi.org/v2/top-headlines"
         params = {
-            "apikey": newsdata_key,
+            "apiKey": NEWS_API_KEY,
             "language": "en",
-            "category": "top,politics,technology,business,science",
-            "country": "us,gb,ca,au",
-            "size": 10
+            "country": "us",
+            "pageSize": 10
         }
         
         response = requests.get(url, params=params, timeout=30)
         response.raise_for_status()
         data = response.json()
         
-        if data.get("status") == "success":
-            for article in data.get("results", []):
+        if data.get("status") == "ok":
+            for article in data.get("articles", []):
                 title = article.get("title", "")
                 description = article.get("description", "")
                 
@@ -111,15 +106,15 @@ def _pull_articles_from_newsdata():
                     items.append({
                         "title": title,
                         "summary": description,
-                        "link": article.get("link", ""),
-                        "published": article.get("pubDate", ""),
-                        "source": article.get("source_id", "NewsData"),
-                        "category": article.get("category", ["general"])[0] if isinstance(article.get("category"), list) else "general",
-                        "image": article.get("image_url", "")
+                        "link": article.get("url", ""),
+                        "published": article.get("publishedAt", ""),
+                        "source": article.get("source", {}).get("name", "NewsAPI"),
+                        "category": "general",
+                        "image": article.get("urlToImage", "")
                     })
                     
     except Exception as e:
-        print(f"NewsData.io error: {e}")
+        print(f"NewsAPI error: {e}")
     
     return items
 
@@ -149,10 +144,10 @@ def _pull_articles(categories, limit):
     print(f"RSS articles found: {len(rss_items)}")
     all_items.extend(rss_items)
     
-    # 2. Get trending articles from NewsData.io (if API key available)
-    newsdata_items = _pull_articles_from_newsdata()
-    print(f"NewsData articles found: {len(newsdata_items)}")
-    all_items.extend(newsdata_items)
+    # 2. Get articles from NewsAPI.org (if API key available)
+    newsapi_items = _pull_articles_from_newsapi()
+    print(f"NewsAPI articles found: {len(newsapi_items)}")
+    all_items.extend(newsapi_items)
     
     # 3. If we still don't have enough, add some fallback content
     if len(all_items) < 5:
@@ -396,153 +391,13 @@ def _to_ssml(text: str) -> str:
     return f"<speak><prosody rate='95%'>{safe}</prosody></speak>"
 
 def _synthesize_mp3(text: str) -> tuple[bytes, list]:
-    print(f"Using voice provider: {VOICE_PROVIDER}")
-    print(f"ElevenLabs API key present: {bool(ELEVENLABS_API_KEY)}")
-    print(f"Voice ID: {VOICE_ID}")
-    
-    if VOICE_PROVIDER == "elevenlabs" and ELEVENLABS_API_KEY and ELEVENLABS_API_KEY != "none":
-        return _synthesize_elevenlabs(text)
-    else:
-        print("Using Polly as primary provider")
-        return _synthesize_polly(text)
+    """Synthesize speech using Amazon Polly"""
+    print(f"Using Amazon Polly with voice: {VOICE_ID}")
+    return _synthesize_polly(text)
 
-def _synthesize_elevenlabs(text: str) -> tuple[bytes, list]:
-    """Synthesize speech using ElevenLabs API and generate word timings"""
-    print("Using ElevenLabs for speech synthesis...")
-    
-    # ElevenLabs can handle longer text
-    if len(text) > 5000:
-        print(f"WARNING: Text too long ({len(text)} chars), truncating...")
-        text = text[:5000] + "... and that's your news update!"
-    
-    try:
-        import requests
-        
-        url = f"https://api.elevenlabs.io/v1/text-to-speech/{VOICE_ID}"
-        headers = {
-            "Accept": "audio/mpeg",
-            "Content-Type": "application/json",
-            "xi-api-key": ELEVENLABS_API_KEY
-        }
-        
-        data = {
-            "text": text,
-            "model_id": "eleven_multilingual_v2",
-            "voice_settings": {
-                "stability": 0.5,
-                "similarity_boost": 0.75,
-                "style": 0.5,
-                "use_speaker_boost": True
-            }
-        }
-        
-        response = requests.post(url, json=data, headers=headers, timeout=60)
-        response.raise_for_status()
-        
-        print(f"ElevenLabs response size: {len(response.content)} bytes")
-        audio_bytes = response.content
-        
-        # Generate estimated word timings
-        word_timings = _generate_word_timings(text)
-        
-        return audio_bytes, word_timings
-        
-    except Exception as e:
-        print(f"ElevenLabs failed: {e}, falling back to Polly...")
-        # Use Polly with a proper voice for fallback
-        return _synthesize_polly_with_voice(text, "Joanna")
 
-def _synthesize_polly_with_voice(text: str, voice_id: str) -> tuple[bytes, list]:
-    """Synthesize speech using Amazon Polly with a specific voice"""
-    print(f"Using Amazon Polly with voice: {voice_id}")
-    
-    # Polly has a 3000 character limit for SSML
-    if len(text) > 1800:  # Leave room for SSML tags and be more conservative
-        print(f"WARNING: Text too long ({len(text)} chars), truncating...")
-        text = text[:1800] + "... and that's your news update!"
-    
-    ssml = _to_ssml(text)
-    print("SSML_PREVIEW:", ssml[:300])
-    print(f"SSML_LENGTH: {len(ssml)} characters")
 
-    try:
-        # First, get word timings using speech marks
-        print("Getting word timings from Polly...")
-        marks_response = polly.synthesize_speech(
-            Text=ssml,
-            TextType="ssml",
-            VoiceId=voice_id,
-            Engine="neural",
-            OutputFormat="json",
-            SpeechMarkTypes=["word"]
-        )
-        
-        # Parse word timings
-        word_timings = []
-        marks_data = marks_response["AudioStream"].read().decode('utf-8')
-        for line in marks_data.strip().split('\n'):
-            if line.strip():
-                mark = json.loads(line)
-                if mark.get('type') == 'word':
-                    word_timings.append({
-                        'word': mark.get('value', ''),
-                        'start': mark.get('time', 0) / 1000.0,  # Convert ms to seconds
-                        'end': (mark.get('time', 0) + 500) / 1000.0  # Estimate end time
-                    })
-        
-        print(f"Got {len(word_timings)} word timings")
-        
-        # Then get the actual audio
-        print("Getting audio from Polly...")
-        audio_response = polly.synthesize_speech(
-            Text=ssml,
-            TextType="ssml",
-            VoiceId=voice_id,
-            Engine="neural",
-            OutputFormat="mp3"
-        )
-        
-        return audio_response["AudioStream"].read(), word_timings
-        
-    except botocore.exceptions.ClientError as e:
-        # Fallback 1: strip prosody, keep plain <speak>
-        if e.response.get("Error", {}).get("Code") in ("InvalidSsmlException", "UnsupportedPlsAlphabet"):
-            basic_ssml = f"<speak>{html.escape(text, quote=False)}</speak>"
-            print("Retrying Polly with basic SSML…")
-            
-            # Get timings with basic SSML
-            marks_response = polly.synthesize_speech(
-                Text=basic_ssml,
-                TextType="ssml",
-                VoiceId=voice_id,
-                Engine="neural",
-                OutputFormat="json",
-                SpeechMarkTypes=["word"]
-            )
-            
-            word_timings = []
-            marks_data = marks_response["AudioStream"].read().decode('utf-8')
-            for line in marks_data.strip().split('\n'):
-                if line.strip():
-                    mark = json.loads(line)
-                    if mark.get('type') == 'word':
-                        word_timings.append({
-                            'word': mark.get('value', ''),
-                            'start': mark.get('time', 0) / 1000.0,
-                            'end': (mark.get('time', 0) + 500) / 1000.0
-                        })
-            
-            # Get audio with basic SSML
-            audio_response = polly.synthesize_speech(
-                Text=basic_ssml,
-                TextType="ssml",
-                VoiceId=voice_id,
-                Engine="neural",
-                OutputFormat="mp3"
-            )
-            
-            return audio_response["AudioStream"].read(), word_timings
-        raise
+
 
 def _synthesize_polly(text: str) -> tuple[bytes, list]:
     """Synthesize speech using Amazon Polly and get word timings"""

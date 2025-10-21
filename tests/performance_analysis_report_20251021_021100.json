@@ -1,0 +1,319 @@
+{
+  "report_generated": "2025-10-21T02:11:00.354679",
+  "test_files_analyzed": 3,
+  "bootstrap_performance": {
+    "response_times": [
+      0.3901519775390625
+    ],
+    "success_rates": [
+      100.0
+    ],
+    "concurrent_performance": {
+      "avg_response_time": 0.3901519775390625,
+      "max_response_time": 0.47487378120422363,
+      "min_response_time": 0.2439250946044922,
+      "concurrent_users": 5,
+      "success_rate": 100.0
+    },
+    "consistency_metrics": {},
+    "overall_metrics": {
+      "avg_response_time": 0.3901519775390625,
+      "min_response_time": 0.3901519775390625,
+      "max_response_time": 0.3901519775390625,
+      "response_time_consistency": 0,
+      "avg_success_rate": 100.0
+    }
+  },
+  "content_quality": {
+    "consistency_scores": [
+      1.0
+    ],
+    "content_completeness": {
+      "news_items_avg": 5,
+      "script_length_avg": 1119,
+      "audio_success_rate": 1.0,
+      "success_rate": 1.0
+    },
+    "quality_trends": {},
+    "overall_quality": {
+      "avg_quality_score": 1.0,
+      "quality_consistency": 0
+    }
+  },
+  "system_reliability": {
+    "component_health": {
+      "bootstrap_api": true,
+      "frontend": true,
+      "agent_status_api": true
+    },
+    "failure_patterns": [],
+    "uptime_metrics": {},
+    "test_success_rate": 80.0,
+    "workflow_reliability": {
+      "success_rate": 0,
+      "average_time": 0,
+      "reliability_status": "Unknown"
+    }
+  },
+  "performance_trends": {
+    "bottlenecks": [],
+    "performance_grades": {
+      "bootstrap": "A",
+      "demo_readiness": "A",
+      "overall_performance": "Unknown"
+    },
+    "recommendations": [
+      "System performance is within acceptable ranges"
+    ]
+  },
+  "raw_results": {
+    "enhanced_performance": {
+      "overall_success": true,
+      "success_rate": 80.0,
+      "total_tests": 5,
+      "passed_tests": 4,
+      "test_results": [
+        {
+          "test": "System Health Check",
+          "success": true,
+          "message": "System healthy - 3/3 components working",
+          "timestamp": "2025-10-21T02:09:08.310306",
+          "data": {
+            "bootstrap": {
+              "status_code": 200,
+              "response_time": 0.461328,
+              "has_content": true
+            },
+            "frontend": {
+              "status_code": 200,
+              "response_time": 0.244758
+            },
+            "agent_status": {
+              "status_code": 400,
+              "response_time": 0.090362,
+              "accessible": true
+            }
+          }
+        },
+        {
+          "test": "Bootstrap Performance Under Load",
+          "success": true,
+          "message": "100% success, 0.39s avg, consistent content",
+          "timestamp": "2025-10-21T02:09:08.788903",
+          "data": {
+            "success_rate": 100.0,
+            "avg_response_time": 0.3901519775390625,
+            "max_response_time": 0.47487378120422363,
+            "min_response_time": 0.2439250946044922,
+            "concurrent_users": 5,
+            "audio_success_rate": 100.0,
+            "script_success_rate": 100.0,
+            "avg_news_count": 5
+          }
+        },
+        {
+          "test": "Content Generation Capability",
+          "success": false,
+          "message": "Generation fails to start",
+          "timestamp": "2025-10-21T02:09:37.856391",
+          "data": {
+            "attempts": [
+              {
+                "attempt": 1,
+                "success": false,
+                "response_time": 29.067371129989624,
+                "error": "HTTP 504",
+                "status": "generation_failed"
+              }
+            ],
+            "successful_starts": 0,
+            "total_attempts": 1
+          }
+        },
+        {
+          "test": "Content Quality Consistency",
+          "success": true,
+          "message": "Consistent quality - 100.0% success, avg quality 1.00",
+          "timestamp": "2025-10-21T02:09:42.873564",
+          "data": {
+            "successful_requests": 3,
+            "total_requests": 3,
+            "success_rate": 1.0,
+            "news_items": {
+              "min": 5,
+              "max": 5,
+              "avg": 5,
+              "std_dev": 0.0
+            },
+            "script_length": {
+              "min": 1119,
+              "max": 1119,
+              "avg": 1119,
+              "std_dev": 0.0
+            },
+            "quality_scores": {
+              "min": 1.0,
+              "max": 1.0,
+              "avg": 1.0,
+              "std_dev": 0.0
+            },
+            "audio_success_rate": 1.0
+          }
+        },
+        {
+          "test": "Frontend Integration Performance",
+          "success": true,
+          "message": "100% success, 0.17s avg response",
+          "timestamp": "2025-10-21T02:09:43.398208",
+          "data": {
+            "success_rate": 100.0,
+            "avg_response_time": 0.17474635442097983,
+            "total_requests": 3
+          }
+        }
+      ],
+      "requirements_validation": {
+        "requirement_5_1": true,
+        "requirement_5_2": false,
+        "requirement_5_3": true
+      },
+      "enhanced_analysis": {
+        "generation_timeout_detected": false,
+        "bootstrap_performance_good": true,
+        "content_quality_consistent": true
+      },
+      "performance_metrics": {
+        "concurrent_users_tested": 5,
+        "reliability_runs_tested": 3,
+        "generation_timeout_limit": 30
+      },
+      "file": "tests/enhanced_performance_reliability_results_20251021_020943.json"
+    },
+    "comprehensive_validation": {
+      "overall_success": false,
+      "success_rate": 25.0,
+      "total_tests": 4,
+      "passed_tests": 1,
+      "test_results": [
+        {
+          "test": "System Health Check",
+          "success": true,
+          "message": "Healthy components: API Bootstrap, Frontend, Agent Status",
+          "timestamp": "2025-10-21T02:03:09.732299",
+          "data": null
+        },
+        {
+          "test": "Reliability Testing",
+          "success": false,
+          "message": "POOR reliability: 0% success rate",
+          "timestamp": "2025-10-21T02:04:29.999113",
+          "data": null
+        },
+        {
+          "test": "Performance Benchmarks",
+          "success": false,
+          "message": "No successful runs to analyze",
+          "timestamp": "2025-10-21T02:04:29.999170",
+          "data": null
+        },
+        {
+          "test": "Content Quality Consistency",
+          "success": false,
+          "message": "Need at least 2 successful runs",
+          "timestamp": "2025-10-21T02:04:29.999178",
+          "data": null
+        }
+      ],
+      "reliability_results": {
+        "success_rate": 0.0,
+        "successful_runs": 0,
+        "total_runs": 3,
+        "average_time": 0,
+        "reliability_status": "POOR",
+        "run_results": [
+          {
+            "success": false,
+            "step_failed": "generation_start",
+            "error": "HTTPSConnectionPool(host='nqot0dir0h.execute-api.us-west-2.amazonaws.com', port=443): Read timed out. (read timeout=20)",
+            "total_time": 20.005059242248535
+          },
+          {
+            "success": false,
+            "step_failed": "generation_start",
+            "error": "HTTPSConnectionPool(host='nqot0dir0h.execute-api.us-west-2.amazonaws.com', port=443): Read timed out. (read timeout=20)",
+            "total_time": 20.124786138534546
+          },
+          {
+            "success": false,
+            "step_failed": "generation_start",
+            "error": "HTTPSConnectionPool(host='nqot0dir0h.execute-api.us-west-2.amazonaws.com', port=443): Read timed out. (read timeout=20)",
+            "total_time": 20.12682795524597
+          }
+        ]
+      },
+      "validation_status": {
+        "system_health": true,
+        "workflow_reliability": false,
+        "performance_benchmarks": false,
+        "content_quality": false
+      },
+      "file": "tests/comprehensive_validation_results_20251021_020429.json"
+    },
+    "performance_benchmarks": {
+      "performance_ready": true,
+      "success_rate": 83.33333333333334,
+      "total_tests": 6,
+      "passed_tests": 5,
+      "test_results": [
+        {
+          "test": "Bootstrap Performance",
+          "success": true,
+          "message": "Excellent: 0.299s avg (Judge-ready)",
+          "timestamp": "2025-10-21T02:04:49.449881",
+          "data": null
+        },
+        {
+          "test": "Agent Orchestration Performance",
+          "success": false,
+          "message": "No successful requests",
+          "timestamp": "2025-10-21T02:05:19.554069",
+          "data": null
+        },
+        {
+          "test": "Frontend Performance",
+          "success": true,
+          "message": "Fast load: 0.154s avg",
+          "timestamp": "2025-10-21T02:05:21.528546",
+          "data": null
+        },
+        {
+          "test": "Caching Effectiveness",
+          "success": true,
+          "message": "Caching working: 54.4% faster",
+          "timestamp": "2025-10-21T02:05:22.726174",
+          "data": null
+        },
+        {
+          "test": "Concurrent Load",
+          "success": true,
+          "message": "100% success rate",
+          "timestamp": "2025-10-21T02:05:24.688848",
+          "data": null
+        },
+        {
+          "test": "Judge Demo Readiness",
+          "success": true,
+          "message": "2/2 scenarios ready",
+          "timestamp": "2025-10-21T02:05:25.240608",
+          "data": null
+        }
+      ],
+      "critical_performance": {
+        "bootstrap": true,
+        "demo_ready": true,
+        "frontend_load": true
+      },
+      "file": "tests/performance_results_20251021_020525.json"
+    }
+  }
+}

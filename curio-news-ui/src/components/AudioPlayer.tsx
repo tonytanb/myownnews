@@ -1,28 +1,101 @@
 import React from "react";
 
-export default function AudioPlayer() {
+interface AudioPlayerProps {
+  onContentUpdate?: (data: any) => void;
+  onTimeUpdate?: (time: number) => void;
+}
+
+export default function AudioPlayer({ onContentUpdate, onTimeUpdate }: AudioPlayerProps) {
   const audioRef = React.useRef<HTMLAudioElement>(null);
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [meta, setMeta] = React.useState<{sources:string[]; generatedAt:string; why:string; traceId?:string} | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [isPlaying, setIsPlaying] = React.useState(false);
+
+  // Listen for transcript seek events
+  React.useEffect(() => {
+    const handleSeek = (event: CustomEvent) => {
+      if (audioRef.current && event.detail.time >= 0) {
+        audioRef.current.currentTime = event.detail.time;
+      }
+    };
+
+    window.addEventListener('transcript-seek', handleSeek as EventListener);
+    return () => {
+      window.removeEventListener('transcript-seek', handleSeek as EventListener);
+    };
+  }, []);
 
   const playLatest = async () => {
     try {
       setError(null);
       setLoading(true);
       
+      // Use environment variable with fallback
+      const apiUrl = process.env.REACT_APP_API_URL || 'https://nqot0dir0h.execute-api.us-west-2.amazonaws.com/prod';
+      console.log('AudioPlayer using API URL:', apiUrl);
+      
       // Use bootstrap endpoint for smart caching
-      const r = await fetch(`${process.env.REACT_APP_API_URL}/bootstrap`, { method: "GET" });
-      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      const r = await fetch(`${apiUrl}/bootstrap`, { 
+        method: "GET",
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        }
+      });
+      console.log('Bootstrap response status:', r.status);
+      
+      if (!r.ok) {
+        const errorText = await r.text();
+        console.error('Bootstrap API error:', r.status, r.statusText, errorText);
+        throw new Error(`HTTP ${r.status}: ${r.statusText}`);
+      }
+      
       const data = await r.json();
+      console.log('Bootstrap response data:', data);
       
       const { audioUrl, sources, generatedAt, why, traceId, shouldRefresh, agentStatus } = data;
 
       setMeta({ sources, generatedAt, why, traceId });
       
+      // Update parent component with new content
+      if (onContentUpdate) {
+        onContentUpdate(data);
+      }
+      
       // Play audio immediately (cached content)
       if (audioRef.current && audioUrl) {
         audioRef.current.src = audioUrl;
+        
+        // Add comprehensive audio event listeners
+        audioRef.current.ontimeupdate = () => {
+          if (onTimeUpdate && audioRef.current) {
+            onTimeUpdate(audioRef.current.currentTime);
+          }
+        };
+
+        audioRef.current.onplay = () => {
+          setIsPlaying(true);
+          // Notify transcript that audio is playing
+          const playEvent = new CustomEvent('audio-play');
+          window.dispatchEvent(playEvent);
+        };
+
+        audioRef.current.onpause = () => {
+          setIsPlaying(false);
+          // Notify transcript that audio is paused
+          const pauseEvent = new CustomEvent('audio-pause');
+          window.dispatchEvent(pauseEvent);
+        };
+
+        audioRef.current.onended = () => {
+          setIsPlaying(false);
+          // Notify transcript that audio ended
+          const endEvent = new CustomEvent('audio-end');
+          window.dispatchEvent(endEvent);
+        };
+        
         await audioRef.current.play();
       }
       
@@ -32,7 +105,13 @@ export default function AudioPlayer() {
         
         // Start real agent generation
         try {
-          const generateR = await fetch(`${process.env.REACT_APP_API_URL}/generate-fresh`, { method: "POST" });
+          const generateR = await fetch(`${apiUrl}/generate-fresh`, { 
+            method: "POST",
+            headers: {
+              'Accept': 'application/json',
+              'Content-Type': 'application/json'
+            }
+          });
           if (generateR.ok) {
             const generateData = await generateR.json();
             const runId = generateData.runId;
@@ -40,7 +119,7 @@ export default function AudioPlayer() {
             // Poll for agent progress
             const pollInterval = setInterval(async () => {
               try {
-                const statusR = await fetch(`${process.env.REACT_APP_API_URL}/agent-status?runId=${runId}`);
+                const statusR = await fetch(`${apiUrl}/agent-status?runId=${runId}`);
                 if (statusR.ok) {
                   const statusData = await statusR.json();
                   const { currentAgent, status } = statusData;
@@ -65,7 +144,7 @@ export default function AudioPlayer() {
                   // Check if generation is complete
                   if (status === 'SUCCESS' || currentAgent === 'COMPLETED') {
                     // Get the fresh content
-                    const freshR = await fetch(`${process.env.REACT_APP_API_URL}/latest`);
+                    const freshR = await fetch(`${apiUrl}/latest`);
                     if (freshR.ok) {
                       const freshData = await freshR.json();
                       setMeta({ 
@@ -97,6 +176,7 @@ export default function AudioPlayer() {
       }
       
     } catch (e:any) {
+      console.error('Fetch error:', e);
       setError(e?.message || "Failed to fetch latest brief.");
     } finally {
       setLoading(false);
@@ -115,7 +195,7 @@ export default function AudioPlayer() {
           <p><strong>Generated:</strong> {new Date(meta.generatedAt).toLocaleString()}</p>
           <p><strong>Why it made the brief:</strong> {meta.why}</p>
           <p><strong>Sources:</strong> {meta.sources.join(" · ")}</p>
-          {meta.traceId && <a href={`${process.env.REACT_APP_API_URL}/trace/${meta.traceId}`} target="_blank" rel="noreferrer">View agent trace</a>}
+          {meta.traceId && <a href={`${process.env.REACT_APP_API_URL || 'https://nqot0dir0h.execute-api.us-west-2.amazonaws.com/prod'}/trace/${meta.traceId}`} target="_blank" rel="noreferrer">View agent trace</a>}
         </div>
       )}
     </div>

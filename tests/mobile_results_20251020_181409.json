@@ -1,0 +1,43 @@
+{
+  "mobile_ready": true,
+  "success_rate": 80.0,
+  "total_tests": 5,
+  "passed_tests": 4,
+  "test_results": [
+    {
+      "test": "Mobile Viewport",
+      "success": true,
+      "message": "Viewport meta tag found",
+      "timestamp": "2025-10-20T18:14:08.492163",
+      "data": null
+    },
+    {
+      "test": "Mobile User Agents",
+      "success": true,
+      "message": "3/3 devices compatible",
+      "timestamp": "2025-10-20T18:14:09.009154",
+      "data": null
+    },
+    {
+      "test": "Responsive CSS",
+      "success": true,
+      "message": "Basic responsive design assumed",
+      "timestamp": "2025-10-20T18:14:09.114170",
+      "data": null
+    },
+    {
+      "test": "Touch Friendly",
+      "success": false,
+      "message": "Limited interactive elements found",
+      "timestamp": "2025-10-20T18:14:09.218517",
+      "data": null
+    },
+    {
+      "test": "Mobile Performance",
+      "success": true,
+      "message": "Load time: 0.11s, Size: 0KB",
+      "timestamp": "2025-10-20T18:14:09.323778",
+      "data": null
+    }
+  ]
+}

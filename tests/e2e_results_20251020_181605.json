@@ -1,0 +1,78 @@
+{
+  "overall_success": false,
+  "success_rate": 66.66666666666666,
+  "total_tests": 9,
+  "passed_tests": 6,
+  "test_results": [
+    {
+      "test": "API Bootstrap",
+      "success": true,
+      "message": "Valid response with 5 news items",
+      "timestamp": "2025-10-20T18:15:47.135167",
+      "data": null
+    },
+    {
+      "test": "API CORS",
+      "success": true,
+      "message": "All CORS headers present",
+      "timestamp": "2025-10-20T18:15:47.219355",
+      "data": null
+    },
+    {
+      "test": "API Generate Fresh",
+      "success": false,
+      "message": "Exception: HTTPSConnectionPool(host='nqot0dir0h.execute-api.us-west-2.amazonaws.com', port=443): Read timed out. (read timeout=15)",
+      "timestamp": "2025-10-20T18:16:02.223507",
+      "data": null
+    },
+    {
+      "test": "API Agent Status",
+      "success": false,
+      "message": "No runId provided",
+      "timestamp": "2025-10-20T18:16:02.223669",
+      "data": null
+    },
+    {
+      "test": "API Trace",
+      "success": true,
+      "message": "Valid trace response for demo-trace-12345",
+      "timestamp": "2025-10-20T18:16:03.992875",
+      "data": null
+    },
+    {
+      "test": "Frontend Access",
+      "success": false,
+      "message": "Missing elements: ['CURIO', \"Today's Brief\", 'Play']",
+      "timestamp": "2025-10-20T18:16:04.268446",
+      "data": null
+    },
+    {
+      "test": "Audio URL",
+      "success": true,
+      "message": "Audio accessible: audio/mpeg",
+      "timestamp": "2025-10-20T18:16:05.182224",
+      "data": null
+    },
+    {
+      "test": "Content Quality",
+      "success": true,
+      "message": "Good tone quality (score: 7)",
+      "timestamp": "2025-10-20T18:16:05.283628",
+      "data": null
+    },
+    {
+      "test": "Error Handling",
+      "success": true,
+      "message": "Proper HTTP error code: 403",
+      "timestamp": "2025-10-20T18:16:05.342805",
+      "data": null
+    }
+  ],
+  "critical_systems": {
+    "api_bootstrap": true,
+    "frontend": false,
+    "cors": true,
+    "agent_orchestration": false,
+    "audio_playback": true
+  }
+}

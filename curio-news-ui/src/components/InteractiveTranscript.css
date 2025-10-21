@@ -22,20 +22,50 @@
   border-left: 4px solid #4CAF50;
 }
 
+.transcript-loading {
+  text-align: center;
+  padding: 2rem;
+  color: #666;
+  font-style: italic;
+}
+
+.transcript-stats {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  font-size: 0.85rem;
+  color: #888;
+}
+
+.transcript-stats span {
+  background: #f5f5f5;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+}
+
 .transcript-container {
   height: 300px; /* Fixed height as requested */
   overflow-y: auto;
+  overflow-x: hidden;
   border: 2px solid #e0e0e0;
   border-radius: 8px;
   padding: 1rem;
   background: #fafafa;
   line-height: 1.8;
   font-size: 1.1rem;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .transcript-text {
   font-family: 'Georgia', serif;
   color: #333;
+  width: 100%;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  white-space: normal;
 }
 
 .transcript-word {
@@ -46,6 +76,11 @@
   cursor: pointer;
   transition: all 0.2s ease;
   position: relative;
+  word-break: normal;
+}
+
+.transcript-word:after {
+  content: " ";
 }
 
 .transcript-word:hover {
@@ -66,21 +101,41 @@
   box-shadow: 0 0 8px rgba(255, 215, 0, 0.6);
   transform: scale(1.05);
   z-index: 1;
-  animation: highlight-pulse 0.3s ease-in-out;
+  position: relative;
+  animation: karaoke-highlight 0.4s ease-in-out;
 }
 
-@keyframes highlight-pulse {
+.transcript-word.playable {
+  cursor: pointer;
+  border-bottom: 1px dotted #ccc;
+}
+
+.transcript-word.playable:hover {
+  background-color: #e3f2fd;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+@keyframes karaoke-highlight {
   0% {
     transform: scale(1);
     box-shadow: 0 0 4px rgba(255, 215, 0, 0.4);
+    background: linear-gradient(135deg, #fff, #f9f9f9);
   }
-  50% {
+  25% {
     transform: scale(1.08);
     box-shadow: 0 0 12px rgba(255, 215, 0, 0.8);
+    background: linear-gradient(135deg, #ffed4e, #ffd700);
+  }
+  75% {
+    transform: scale(1.06);
+    box-shadow: 0 0 10px rgba(255, 215, 0, 0.7);
+    background: linear-gradient(135deg, #ffd700, #ffed4e);
   }
   100% {
     transform: scale(1.05);
     box-shadow: 0 0 8px rgba(255, 215, 0, 0.6);
+    background: linear-gradient(135deg, #ffd700, #ffed4e);
   }
 }
 

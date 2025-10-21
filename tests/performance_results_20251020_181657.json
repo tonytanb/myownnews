@@ -1,0 +1,55 @@
+{
+  "performance_ready": true,
+  "success_rate": 83.33333333333334,
+  "total_tests": 6,
+  "passed_tests": 5,
+  "test_results": [
+    {
+      "test": "Bootstrap Performance",
+      "success": true,
+      "message": "Excellent: 0.200s avg (Judge-ready)",
+      "timestamp": "2025-10-20T18:16:24.075023",
+      "data": null
+    },
+    {
+      "test": "Agent Orchestration Performance",
+      "success": false,
+      "message": "No successful requests",
+      "timestamp": "2025-10-20T18:16:54.122616",
+      "data": null
+    },
+    {
+      "test": "Frontend Performance",
+      "success": true,
+      "message": "Fast load: 0.153s avg",
+      "timestamp": "2025-10-20T18:16:56.093431",
+      "data": null
+    },
+    {
+      "test": "Caching Effectiveness",
+      "success": true,
+      "message": "Caching working: 22.4% faster",
+      "timestamp": "2025-10-20T18:16:57.131985",
+      "data": null
+    },
+    {
+      "test": "Concurrent Load",
+      "success": true,
+      "message": "100% success rate",
+      "timestamp": "2025-10-20T18:16:57.431679",
+      "data": null
+    },
+    {
+      "test": "Judge Demo Readiness",
+      "success": true,
+      "message": "2/2 scenarios ready",
+      "timestamp": "2025-10-20T18:16:57.766594",
+      "data": null
+    }
+  ],
+  "critical_performance": {
+    "bootstrap": true,
+    "demo_ready": true,
+    "frontend_load": true
+  }
+}
