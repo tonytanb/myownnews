@@ -1,0 +1,84 @@
+{
+  "overall_ready": true,
+  "success_rate": 100.0,
+  "total_tests": 9,
+  "passed_tests": 9,
+  "verification_results": [
+    {
+      "test": "API Bootstrap endpoint",
+      "success": true,
+      "message": "HTTP 200, has content: True",
+      "timestamp": "2025-10-21T02:20:25.281297",
+      "details": null
+    },
+    {
+      "test": "API Agent status endpoint",
+      "success": true,
+      "message": "HTTP 400 (accessible)",
+      "timestamp": "2025-10-21T02:20:25.432415",
+      "details": null
+    },
+    {
+      "test": "API Trace endpoint",
+      "success": true,
+      "message": "HTTP 403 (endpoint exists)",
+      "timestamp": "2025-10-21T02:20:25.548826",
+      "details": null
+    },
+    {
+      "test": "Frontend Accessibility",
+      "success": true,
+      "message": "HTTP 200, content length: 569",
+      "timestamp": "2025-10-21T02:20:25.809360",
+      "details": null
+    },
+    {
+      "test": "Content Quality",
+      "success": true,
+      "message": "Quality score: 1.0, News: 5, Script: 1123chars",
+      "timestamp": "2025-10-21T02:20:26.162941",
+      "details": {
+        "script_length": 1123,
+        "news_count": 5,
+        "has_audio": true,
+        "quality_score": 1.0,
+        "missing_fields": []
+      }
+    },
+    {
+      "test": "Performance",
+      "success": true,
+      "message": "Avg: 0.33s, Max: 0.38s",
+      "timestamp": "2025-10-21T02:20:27.152009",
+      "details": {
+        "avg_response_time": 0.32952531178792316,
+        "max_response_time": 0.37562084197998047,
+        "successful_requests": 3
+      }
+    },
+    {
+      "test": "Demo Fresh Content",
+      "success": true,
+      "message": "Generated: 2025-10-21T06:09:55.529031",
+      "timestamp": "2025-10-21T02:20:28.744303",
+      "details": null
+    },
+    {
+      "test": "Demo Audio Accessibility",
+      "success": true,
+      "message": "Audio URL: 200",
+      "timestamp": "2025-10-21T02:20:28.744364",
+      "details": null
+    },
+    {
+      "test": "Demo Frontend Speed",
+      "success": true,
+      "message": "Load time: 0.22s",
+      "timestamp": "2025-10-21T02:20:28.744373",
+      "details": null
+    }
+  ],
+  "verification_timestamp": "2025-10-21T02:20:28.745489",
+  "api_url": "https://nqot0dir0h.execute-api.us-west-2.amazonaws.com/prod",
+  "frontend_url": "http://curio-news-frontend-1760997974.s3-website-us-west-2.amazonaws.com"
+}

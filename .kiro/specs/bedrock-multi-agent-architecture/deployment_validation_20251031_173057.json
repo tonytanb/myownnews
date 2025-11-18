@@ -1,0 +1,679 @@
+{
+  "timestamp": "2025-10-31T17:30:43.121017",
+  "agent_creation": {
+    "success": true,
+    "agents_created": 7,
+    "agents_failed": 0,
+    "details": [
+      {
+        "name": "curio-news-content-curator",
+        "id": "6VJN9XM4SY",
+        "status": "PREPARED"
+      },
+      {
+        "name": "curio-news-entertainment-curator",
+        "id": "RBBXHCQVEU",
+        "status": "PREPARED"
+      },
+      {
+        "name": "curio-news-media-enhancer",
+        "id": "P1TDHXFWZZ",
+        "status": "PREPARED"
+      },
+      {
+        "name": "curio-news-script-writer",
+        "id": "UI4HRSN9H0",
+        "status": "PREPARED"
+      },
+      {
+        "name": "curio-news-social-impact-analyzer",
+        "id": "CO5NL9YLGM",
+        "status": "PREPARED"
+      },
+      {
+        "name": "curio-news-story-selector",
+        "id": "L6N7ZOIIVZ",
+        "status": "PREPARED"
+      },
+      {
+        "name": "curio-news-test-agent",
+        "id": "YFSQK9VMWA",
+        "status": "PREPARED"
+      }
+    ]
+  },
+  "agent_verification": {
+    "agents_found": 6,
+    "agents_missing": [],
+    "agent_details": [
+      {
+        "name": "curio-news-content-curator",
+        "id": "6VJN9XM4SY",
+        "status": "PREPARED",
+        "updated": "2025-10-31T15:31:35.024033+00:00"
+      },
+      {
+        "name": "curio-news-entertainment-curator",
+        "id": "RBBXHCQVEU",
+        "status": "PREPARED",
+        "updated": "2025-10-31T15:31:54.283550+00:00"
+      },
+      {
+        "name": "curio-news-media-enhancer",
+        "id": "P1TDHXFWZZ",
+        "status": "PREPARED",
+        "updated": "2025-10-31T15:31:59.427533+00:00"
+      },
+      {
+        "name": "curio-news-script-writer",
+        "id": "UI4HRSN9H0",
+        "status": "PREPARED",
+        "updated": "2025-10-31T15:31:49.697990+00:00"
+      },
+      {
+        "name": "curio-news-social-impact-analyzer",
+        "id": "CO5NL9YLGM",
+        "status": "PREPARED",
+        "updated": "2025-10-31T15:31:40.332922+00:00"
+      },
+      {
+        "name": "curio-news-story-selector",
+        "id": "L6N7ZOIIVZ",
+        "status": "PREPARED",
+        "updated": "2025-10-31T15:31:44.798116+00:00"
+      }
+    ]
+  },
+  "lambda_deployment": {
+    "success": true,
+    "stack_status": "UPDATE_COMPLETE",
+    "lambda_updated": true,
+    "stack_name": "myownnews-mvp",
+    "region": "us-west-2"
+  },
+  "e2e_testing": {
+    "success": true,
+    "execution_time": 0.37,
+    "agents_invoked": 0,
+    "agents_succeeded": 0,
+    "agents_failed": 0,
+    "response_data": {
+      "audioUrl": "https://myownnews-mvp-assetsbucket-kozbz1eooh6q.s3.us-west-2.amazonaws.com/audio/2025-10-18/voice-1760748904-6b6190bc.mp3",
+      "sources": [
+        "The Washington Post",
+        "Apple Newsroom",
+        "Investopedia",
+        "NPR",
+        "Politico"
+      ],
+      "generatedAt": "2025-10-31T21:30:44.686697",
+      "why": "Fresh content curated from 8 real news sources using powerful Bedrock agents!",
+      "traceId": "unified-1761946244",
+      "script": "Welcome to Curio News! Here are today's top stories that matter to you. Story 1: Covid in pregnancy tied to autism, developmental issues, study says - The Washington Post. A study published in the journal Obstetrics and Gynecology analyzed more than 18,100 births in Massachusetts of children born to women who contracted the virus starting in the early months of the pandemic through some of 2021. Story 2: Judge sentences former Jan. 6 defendant for hoax threat near Obama's home - NPR. Taylor Taranto's sentencing for time served comes as storming of the U.S. Capitol in 2021 continues to reverberate inside the Justice Department under the Trump administration. Story 3: Amazon Stock Pops as Earnings Top Estimates, Driven by AWS Growth - Investopedia. Amazon shares jumped in extended trading Thursday after the company posted third-quarter earnings that blew past analysts' estimates, driven by growth in its cloud business. That's your news update for today. Stay informed, stay curious!",
+      "news_items": [
+        {
+          "title": "Covid in pregnancy tied to autism, developmental issues, study says - The Washington Post",
+          "summary": "A study published in the journal Obstetrics and Gynecology analyzed more than 18,100 births in Massachusetts of children born to women who contracted the virus starting in the early months of the pandemic through some of 2021.",
+          "link": "https://www.washingtonpost.com/health/2025/10/30/covid-19-pregnancy-autism-risk/",
+          "published": "2025-10-30T22:30:35Z",
+          "source": "The Washington Post",
+          "category": "GENERAL",
+          "image": "https://www.washingtonpost.com/wp-apps/imrs.php?src=https://arc-anglerfish-washpost-prod-washpost.s3.amazonaws.com/public/QCGF63R3HYI6XKWZRFMSE4UAYQ.jpg&w=1440",
+          "relevance_score": 0.8
+        },
+        {
+          "title": "Judge sentences former Jan. 6 defendant for hoax threat near Obama's home - NPR",
+          "summary": "Taylor Taranto's sentencing for time served comes as storming of the U.S. Capitol in 2021 continues to reverberate inside the Justice Department under the Trump administration.",
+          "link": "https://www.npr.org/2025/10/30/g-s1-95855/january-six-capitol-defendant-obama-threat",
+          "published": "2025-10-30T21:12:47Z",
+          "source": "NPR",
+          "category": "GENERAL",
+          "image": "https://npr.brightspotcdn.com/dims3/default/strip/false/crop/4666x2625+0+365/resize/1400/quality/100/format/jpeg/?url=http%3A%2F%2Fnpr-brightspot.s3.amazonaws.com%2Ffc%2F2a%2Ff63f5ab9410f9756bc0e14edeabb%2Fgettyimages-1230455457.jpg",
+          "relevance_score": 0.8
+        },
+        {
+          "title": "Amazon Stock Pops as Earnings Top Estimates, Driven by AWS Growth - Investopedia",
+          "summary": "Amazon shares jumped in extended trading Thursday after the company posted third-quarter earnings that blew past analysts' estimates, driven by growth in its cloud business.",
+          "link": "https://www.investopedia.com/amazon-stock-pops-as-earnings-top-estimates-driven-by-aws-growth-11839134",
+          "published": "2025-10-30T20:38:29Z",
+          "source": "Investopedia",
+          "category": "GENERAL",
+          "image": "https://www.investopedia.com/thmb/Mcy5HBg97cDvOhd_u8fK4gPMn8g=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/GettyImages-2243392135-0028d9319ee44618a83d8726913826ad.jpg",
+          "relevance_score": 0.8
+        },
+        {
+          "title": "Apple reports fourth quarter results - Apple",
+          "summary": "Apple today announced financial results for its fiscal 2025 fourth quarter ended September 27, 2025.",
+          "link": "https://www.apple.com/newsroom/2025/10/apple-reports-fourth-quarter-results/",
+          "published": "2025-10-30T20:37:44Z",
+          "source": "Apple Newsroom",
+          "category": "GENERAL",
+          "image": "https://www.apple.com/newsroom/images/default/apple-logo-og.jpg?202510302033",
+          "relevance_score": 0.8
+        },
+        {
+          "title": "Zohran Mamdani and Democratic Socialists prepare for complicated partnership - Politico",
+          "summary": "The frontrunner and the Democratic Socialists of America are entering uncharted political territory.",
+          "link": "https://www.politico.com/news/2025/10/30/mamdani-dsa-relationship-nyc-mayor-00628704",
+          "published": "2025-10-30T20:31:00Z",
+          "source": "Politico",
+          "category": "GENERAL",
+          "image": "https://www.politico.com/dims4/default/resize/1200/quality/90/format/jpg?url=https%3A%2F%2Fstatic.politico.com%2F84%2F48%2F3eca54214395b7570a3b18f183d6%2Felection-2025-new-york-mayor-49886.jpg",
+          "relevance_score": 0.8
+        },
+        {
+          "title": "Judge says she\u2019ll likely order Trump administration to send SNAP funds to states - The Washington Post",
+          "summary": "The move could keep food assistance flowing despite the federal government shutdown.",
+          "link": "https://www.washingtonpost.com/politics/2025/10/30/snap-funds-government-shutdown/",
+          "published": "2025-10-30T20:23:13Z",
+          "source": "The Washington Post",
+          "category": "GENERAL",
+          "image": "https://www.washingtonpost.com/wp-apps/imrs.php?src=https://arc-anglerfish-washpost-prod-washpost.s3.amazonaws.com/public/4DYA7URC4MI6VMBU3Z64FNIZTM.jpg&w=1440",
+          "relevance_score": 0.8
+        },
+        {
+          "title": "Interstellar comet 3I/ATLAS just made its closest pass of the sun. Discover where it\u2019s going next - CNN",
+          "summary": "An interstellar comet that originated outside our solar system just flew by the sun. Next, the object will fly by Earth in December.",
+          "link": "https://www.cnn.com/2025/10/30/science/interstellar-comet-3i-atlas-sun",
+          "published": "2025-10-30T20:20:07Z",
+          "source": "CNN",
+          "category": "GENERAL",
+          "image": "https://media.cnn.com/api/v1/images/stellar/prod/stsci-01k1x6xdr76zd4fyj9vtwn1erb.jpg?c=16x9&q=w_800,c_fill",
+          "relevance_score": 0.8
+        },
+        {
+          "title": "Live updates: Trump administration limits refugee admissions to mostly white South Africans - AP News",
+          "summary": "President Donald Trump's administration is restricting the number of refugees it admits into the country to 7,500, and they will mostly be white South Africans.",
+          "link": "https://apnews.com/live/donald-trump-news-updates-10-30-2025",
+          "published": "2025-10-30T20:19:00Z",
+          "source": "Associated Press",
+          "category": "GENERAL",
+          "image": "https://dims.apnews.com/dims4/default/b26906e/2147483647/strip/true/crop/6500x3656+0+339/resize/1440x810!/quality/90/?url=https%3A%2F%2Fassets.apnews.com%2F2d%2Ffa%2F1b9a44a84aef84679c8f69d1b341%2Fap25303708205861.jpg",
+          "relevance_score": 0.8
+        }
+      ],
+      "word_timings": [
+        {
+          "word": "Welcome",
+          "start": 0.0,
+          "end": 0.4
+        },
+        {
+          "word": "to",
+          "start": 0.4,
+          "end": 0.8
+        },
+        {
+          "word": "Curio",
+          "start": 0.8,
+          "end": 1.2
+        },
+        {
+          "word": "News!",
+          "start": 1.2,
+          "end": 1.6
+        },
+        {
+          "word": "Here",
+          "start": 1.6,
+          "end": 2.0
+        },
+        {
+          "word": "are",
+          "start": 2.0,
+          "end": 2.4
+        },
+        {
+          "word": "today's",
+          "start": 2.4,
+          "end": 2.8
+        },
+        {
+          "word": "top",
+          "start": 2.8,
+          "end": 3.2
+        },
+        {
+          "word": "stories",
+          "start": 3.2,
+          "end": 3.6
+        },
+        {
+          "word": "that",
+          "start": 3.6,
+          "end": 4.0
+        },
+        {
+          "word": "matter",
+          "start": 4.0,
+          "end": 4.4
+        },
+        {
+          "word": "to",
+          "start": 4.4,
+          "end": 4.8
+        },
+        {
+          "word": "you.",
+          "start": 4.8,
+          "end": 5.2
+        },
+        {
+          "word": "Story",
+          "start": 5.2,
+          "end": 5.6
+        },
+        {
+          "word": "1:",
+          "start": 5.6,
+          "end": 6.0
+        },
+        {
+          "word": "Covid",
+          "start": 6.0,
+          "end": 6.4
+        },
+        {
+          "word": "in",
+          "start": 6.4,
+          "end": 6.8
+        },
+        {
+          "word": "pregnancy",
+          "start": 6.8,
+          "end": 7.2
+        },
+        {
+          "word": "tied",
+          "start": 7.2,
+          "end": 7.6
+        },
+        {
+          "word": "to",
+          "start": 7.6,
+          "end": 8.0
+        },
+        {
+          "word": "autism,",
+          "start": 8.0,
+          "end": 8.4
+        },
+        {
+          "word": "developmental",
+          "start": 8.4,
+          "end": 8.8
+        },
+        {
+          "word": "issues,",
+          "start": 8.8,
+          "end": 9.2
+        },
+        {
+          "word": "study",
+          "start": 9.2,
+          "end": 9.6
+        },
+        {
+          "word": "says",
+          "start": 9.6,
+          "end": 10.0
+        },
+        {
+          "word": "-",
+          "start": 10.0,
+          "end": 10.4
+        },
+        {
+          "word": "The",
+          "start": 10.4,
+          "end": 10.8
+        },
+        {
+          "word": "Washington",
+          "start": 10.8,
+          "end": 11.2
+        },
+        {
+          "word": "Post.",
+          "start": 11.2,
+          "end": 11.6
+        },
+        {
+          "word": "A",
+          "start": 11.6,
+          "end": 12.0
+        },
+        {
+          "word": "study",
+          "start": 12.0,
+          "end": 12.4
+        },
+        {
+          "word": "published",
+          "start": 12.4,
+          "end": 12.8
+        },
+        {
+          "word": "in",
+          "start": 12.8,
+          "end": 13.2
+        },
+        {
+          "word": "the",
+          "start": 13.2,
+          "end": 13.6
+        },
+        {
+          "word": "journal",
+          "start": 13.6,
+          "end": 14.0
+        },
+        {
+          "word": "Obstetrics",
+          "start": 14.0,
+          "end": 14.4
+        },
+        {
+          "word": "and",
+          "start": 14.4,
+          "end": 14.8
+        },
+        {
+          "word": "Gynecology",
+          "start": 14.8,
+          "end": 15.2
+        },
+        {
+          "word": "analyzed",
+          "start": 15.2,
+          "end": 15.6
+        },
+        {
+          "word": "more",
+          "start": 15.6,
+          "end": 16.0
+        },
+        {
+          "word": "than",
+          "start": 16.0,
+          "end": 16.4
+        },
+        {
+          "word": "18,100",
+          "start": 16.4,
+          "end": 16.8
+        },
+        {
+          "word": "births",
+          "start": 16.8,
+          "end": 17.2
+        },
+        {
+          "word": "in",
+          "start": 17.2,
+          "end": 17.6
+        },
+        {
+          "word": "Massachusetts",
+          "start": 17.6,
+          "end": 18.0
+        },
+        {
+          "word": "of",
+          "start": 18.0,
+          "end": 18.4
+        },
+        {
+          "word": "children",
+          "start": 18.4,
+          "end": 18.8
+        },
+        {
+          "word": "born",
+          "start": 18.8,
+          "end": 19.2
+        },
+        {
+          "word": "to",
+          "start": 19.2,
+          "end": 19.6
+        },
+        {
+          "word": "women",
+          "start": 19.6,
+          "end": 20.0
+        }
+      ],
+      "agentOutputs": {
+        "favoriteStory": {
+          "title": "Covid in pregnancy tied to autism, developmental issues, study says - The Washington Post",
+          "reasoning": "Selected as today's most significant story: Covid in pregnancy tied to autism, developmental issues, study says - The Washington Post. This story stands out for its relevance and potential impact on our audience."
+        },
+        "mediaEnhancements": {
+          "stories": [
+            {
+              "title": "Covid in pregnancy tied to autism, developmental issues, study says - The Washington Post",
+              "media_recommendations": {
+                "images": [
+                  {
+                    "url": "https://www.washingtonpost.com/wp-apps/imrs.php?src=https://arc-anglerfish-washpost-prod-washpost.s3.amazonaws.com/public/QCGF63R3HYI6XKWZRFMSE4UAYQ.jpg&w=1440",
+                    "alt_text": "Image for Covid in pregnancy tied to autism, developmental i"
+                  }
+                ],
+                "videos": [],
+                "social_media_optimization": {
+                  "hashtags": [
+                    "#General",
+                    "#News",
+                    "#CurioNews"
+                  ]
+                }
+              }
+            },
+            {
+              "title": "Judge sentences former Jan. 6 defendant for hoax threat near Obama's home - NPR",
+              "media_recommendations": {
+                "images": [
+                  {
+                    "url": "https://npr.brightspotcdn.com/dims3/default/strip/false/crop/4666x2625+0+365/resize/1400/quality/100/format/jpeg/?url=http%3A%2F%2Fnpr-brightspot.s3.amazonaws.com%2Ffc%2F2a%2Ff63f5ab9410f9756bc0e14edeabb%2Fgettyimages-1230455457.jpg",
+                    "alt_text": "Image for Judge sentences former Jan. 6 defendant for hoax t"
+                  }
+                ],
+                "videos": [],
+                "social_media_optimization": {
+                  "hashtags": [
+                    "#General",
+                    "#News",
+                    "#CurioNews"
+                  ]
+                }
+              }
+            },
+            {
+              "title": "Amazon Stock Pops as Earnings Top Estimates, Driven by AWS Growth - Investopedia",
+              "media_recommendations": {
+                "images": [
+                  {
+                    "url": "https://www.investopedia.com/thmb/Mcy5HBg97cDvOhd_u8fK4gPMn8g=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/GettyImages-2243392135-0028d9319ee44618a83d8726913826ad.jpg",
+                    "alt_text": "Image for Amazon Stock Pops as Earnings Top Estimates, Drive"
+                  }
+                ],
+                "videos": [],
+                "social_media_optimization": {
+                  "hashtags": [
+                    "#General",
+                    "#News",
+                    "#CurioNews"
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        "weekendRecommendations": {
+          "books": [
+            {
+              "title": "The News: A User's Manual",
+              "author": "Alain de Botton",
+              "description": "A thoughtful guide to consuming news in the modern age.",
+              "genre": "Non-fiction"
+            },
+            {
+              "title": "Factfulness",
+              "author": "Hans Rosling",
+              "description": "Ten reasons we're wrong about the world and why things are better than you think.",
+              "genre": "Social Science"
+            }
+          ],
+          "movies_and_shows": [
+            {
+              "title": "All the President's Men",
+              "platform": "Various Streaming",
+              "description": "Classic journalism thriller about investigative reporting.",
+              "genre": "Drama, Thriller"
+            },
+            {
+              "title": "The Morning Show",
+              "platform": "Apple TV+",
+              "description": "Behind-the-scenes look at a morning news program.",
+              "genre": "Drama"
+            }
+          ],
+          "events": [
+            {
+              "name": "Local News Literacy Workshops",
+              "location": "Check local libraries and community centers",
+              "date": "Various weekends",
+              "description": "Learn to critically evaluate news sources and combat misinformation.",
+              "link": "Search for \"news literacy\" + your city"
+            },
+            {
+              "name": "Current Events Discussion Groups",
+              "location": "Coffee shops, bookstores, community centers",
+              "date": "Weekly meetups",
+              "description": "Engage in thoughtful discussions about current events with your community.",
+              "link": "https://www.meetup.com"
+            }
+          ],
+          "entertainment_recommendations": {
+            "top_movies": [
+              {
+                "title": "Dune: Part Two",
+                "genre": "Sci-Fi Epic",
+                "rating": "8.8/10",
+                "platform": "Max",
+                "description": "Paul Atreides unites with Chani and the Fremen while seeking revenge against the conspirators who destroyed his family.",
+                "release_year": 2024,
+                "runtime": "2h 46m"
+              },
+              {
+                "title": "Oppenheimer",
+                "genre": "Historical Biography",
+                "rating": "8.4/10",
+                "platform": "Various Streaming",
+                "description": "The story of J. Robert Oppenheimer and the development of the atomic bomb.",
+                "release_year": 2023,
+                "runtime": "3h 0m"
+              }
+            ],
+            "must_watch_series": [
+              {
+                "title": "The Bear",
+                "genre": "Comedy-Drama",
+                "rating": "9.1/10",
+                "platform": "Hulu",
+                "description": "A young chef from the fine dining world returns to Chicago to run his deceased brother's sandwich shop.",
+                "seasons": 3,
+                "episodes_per_season": 10,
+                "status": "ongoing"
+              },
+              {
+                "title": "Wednesday",
+                "genre": "Dark Comedy",
+                "rating": "8.1/10",
+                "platform": "Netflix",
+                "description": "Wednesday Addams navigates her years as a student at Nevermore Academy.",
+                "seasons": 2,
+                "episodes_per_season": 8,
+                "status": "new_season"
+              }
+            ],
+            "theater_plays": [
+              {
+                "title": "Hamilton",
+                "genre": "Musical Biography",
+                "venue": "Richard Rodgers Theatre",
+                "city": "New York",
+                "description": "The revolutionary story of Alexander Hamilton, founding father and first Secretary of the Treasury.",
+                "show_times": "Tue-Sun 8PM, Wed & Sat 2PM",
+                "ticket_info": "From $79",
+                "rating": "9.5/10"
+              },
+              {
+                "title": "The Lion King",
+                "genre": "Musical Family",
+                "venue": "Minskoff Theatre",
+                "city": "New York",
+                "description": "Disney's award-winning musical about Simba's journey to become king.",
+                "show_times": "Tue-Fri 8PM, Sat 2PM & 8PM, Sun 1PM & 6:30PM",
+                "ticket_info": "From $89",
+                "rating": "9.2/10"
+              }
+            ]
+          },
+          "cultural_insights": {
+            "news_consumption_trends": "Young adults increasingly prefer personalized, AI-curated news that cuts through information overload.",
+            "social_media_phenomena": "News content performs best when it's accessible, visual, and provides clear context.",
+            "media_literacy_focus": "There's growing emphasis on understanding news sources and combating misinformation."
+          }
+        }
+      },
+      "shouldRefresh": false,
+      "agentStatus": "READY",
+      "quality_score": 90,
+      "enhanced_orchestration": true,
+      "validation_passed": true
+    }
+  },
+  "frontend_validation": {
+    "success": true,
+    "ui_components_present": true,
+    "agent_trace_visible": true,
+    "real_time_updates": true
+  },
+  "performance_metrics": {
+    "target_met": true,
+    "average_time": 0.47,
+    "min_time": 0.41,
+    "max_time": 0.52,
+    "test_runs": 3,
+    "execution_times": [
+      0.52,
+      0.41,
+      0.5
+    ]
+  },
+  "demo_scenarios": {
+    "success": true,
+    "scenarios_tested": 3,
+    "scenarios_passed": 3,
+    "scenarios": [
+      {
+        "name": "Technology Focus",
+        "success": true,
+        "execution_time": 0.27
+      },
+      {
+        "name": "Social Impact Focus",
+        "success": true,
+        "execution_time": 0.38
+      },
+      {
+        "name": "Entertainment Focus",
+        "success": true,
+        "execution_time": 0.31
+      }
+    ]
+  },
+  "overall_status": "success"
+}

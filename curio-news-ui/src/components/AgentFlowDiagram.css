@@ -1,0 +1,487 @@
+/* Agent Flow Diagram Styles */
+.agent-flow-diagram {
+  width: 100%;
+  padding: 2rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 24px;
+  margin: 2rem 0;
+  box-shadow: 0 10px 40px rgba(102, 126, 234, 0.3);
+}
+
+.agent-flow-diagram.compact {
+  padding: 1.5rem;
+  margin: 1rem 0;
+}
+
+.diagram-header {
+  text-align: center;
+  margin-bottom: 2rem;
+  color: white;
+}
+
+.diagram-header h3 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.75rem;
+  font-weight: 700;
+}
+
+.diagram-header p {
+  margin: 0;
+  font-size: 1rem;
+  opacity: 0.9;
+}
+
+.flow-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+}
+
+/* Phase Styles */
+.flow-phase {
+  width: 100%;
+  max-width: 600px;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 16px;
+  padding: 1.5rem;
+  position: relative;
+  transition: all 0.4s ease;
+  border: 3px solid transparent;
+}
+
+.flow-phase.pending {
+  opacity: 0.5;
+  transform: scale(0.95);
+}
+
+.flow-phase.active {
+  border-color: #ffd700;
+  box-shadow: 0 0 30px rgba(255, 215, 0, 0.6);
+  animation: pulse-phase 2s infinite;
+  transform: scale(1.02);
+}
+
+.flow-phase.complete {
+  border-color: #48bb78;
+  opacity: 1;
+  transform: scale(1);
+}
+
+@keyframes pulse-phase {
+  0%, 100% {
+    box-shadow: 0 0 30px rgba(255, 215, 0, 0.6);
+  }
+  50% {
+    box-shadow: 0 0 50px rgba(255, 215, 0, 0.9);
+  }
+}
+
+.phase-label {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.phase-number {
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.flow-phase.active .phase-number {
+  background: linear-gradient(135deg, #ffd700, #ffed4e);
+  color: #333;
+  animation: spin-number 3s linear infinite;
+}
+
+.flow-phase.complete .phase-number {
+  background: linear-gradient(135deg, #48bb78, #38a169);
+}
+
+@keyframes spin-number {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.phase-name {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #2d3748;
+}
+
+.phase-agents {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.phase-agents.parallel {
+  justify-content: space-around;
+}
+
+.phase-agents.sequential {
+  justify-content: center;
+}
+
+.agent-node {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem;
+  background: #f7fafc;
+  border-radius: 12px;
+  border: 2px solid #e2e8f0;
+  transition: all 0.3s ease;
+}
+
+.flow-phase.active .agent-node {
+  background: #fff5e6;
+  border-color: #ffd700;
+  animation: agent-glow 2s infinite;
+}
+
+.flow-phase.complete .agent-node {
+  background: #e6ffed;
+  border-color: #48bb78;
+}
+
+@keyframes agent-glow {
+  0%, 100% {
+    box-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.6);
+  }
+}
+
+.agent-icon {
+  font-size: 2.5rem;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+}
+
+.flow-phase.active .agent-icon {
+  animation: bounce-icon 1s infinite;
+}
+
+@keyframes bounce-icon {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.agent-name {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #4a5568;
+  text-align: center;
+}
+
+.parallel-indicator {
+  text-align: center;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #667eea;
+  background: rgba(102, 126, 234, 0.1);
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  margin-top: 0.5rem;
+}
+
+/* Connector Styles */
+.flow-connector {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1rem 0;
+  transition: all 0.3s ease;
+}
+
+.flow-connector.pending {
+  opacity: 0.3;
+}
+
+.flow-connector.active,
+.flow-connector.complete {
+  opacity: 1;
+}
+
+.connector-line {
+  width: 3px;
+  height: 40px;
+  background: rgba(255, 255, 255, 0.5);
+  transition: all 0.3s ease;
+}
+
+.flow-connector.active .connector-line {
+  background: linear-gradient(180deg, #ffd700, #ffed4e);
+  animation: flow-pulse 1.5s infinite;
+}
+
+.flow-connector.complete .connector-line {
+  background: linear-gradient(180deg, #48bb78, #38a169);
+}
+
+@keyframes flow-pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.connector-arrow {
+  font-size: 2rem;
+  color: rgba(255, 255, 255, 0.8);
+  margin: 0.5rem 0;
+  transition: all 0.3s ease;
+}
+
+.flow-connector.active .connector-arrow {
+  color: #ffd700;
+  animation: arrow-bounce 1s infinite;
+}
+
+.flow-connector.complete .connector-arrow {
+  color: #48bb78;
+}
+
+@keyframes arrow-bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(10px);
+  }
+}
+
+.data-flow-label {
+  font-size: 0.85rem;
+  color: white;
+  background: rgba(255, 255, 255, 0.2);
+  padding: 0.5rem 1rem;
+  border-radius: 12px;
+  text-align: center;
+  font-weight: 500;
+  backdrop-filter: blur(10px);
+}
+
+.flow-connector.active .data-flow-label {
+  background: rgba(255, 215, 0, 0.3);
+  font-weight: 600;
+}
+
+/* Final Output */
+.flow-output {
+  margin-top: 2rem;
+  text-align: center;
+  animation: fade-in-up 0.6s ease;
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.output-icon {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+  animation: celebrate 1s ease;
+}
+
+@keyframes celebrate {
+  0%, 100% {
+    transform: scale(1) rotate(0deg);
+  }
+  25% {
+    transform: scale(1.2) rotate(-10deg);
+  }
+  75% {
+    transform: scale(1.2) rotate(10deg);
+  }
+}
+
+.output-label {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: white;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Legend */
+.diagram-legend {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: white;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.legend-dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid white;
+}
+
+.legend-dot.complete {
+  background: #48bb78;
+}
+
+.legend-dot.active {
+  background: #ffd700;
+  animation: pulse-dot 1.5s infinite;
+}
+
+@keyframes pulse-dot {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0.7;
+  }
+}
+
+.legend-dot.pending {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .agent-flow-diagram {
+    padding: 1.5rem;
+  }
+
+  .agent-flow-diagram.compact {
+    padding: 1rem;
+  }
+
+  .diagram-header h3 {
+    font-size: 1.5rem;
+  }
+
+  .diagram-header p {
+    font-size: 0.9rem;
+  }
+
+  .flow-phase {
+    padding: 1.25rem;
+  }
+
+  .phase-number {
+    width: 36px;
+    height: 36px;
+    font-size: 1.1rem;
+  }
+
+  .phase-name {
+    font-size: 1.1rem;
+  }
+
+  .phase-agents {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .agent-icon {
+    font-size: 2rem;
+  }
+
+  .agent-name {
+    font-size: 0.85rem;
+  }
+
+  .connector-line {
+    height: 30px;
+  }
+
+  .connector-arrow {
+    font-size: 1.5rem;
+  }
+
+  .data-flow-label {
+    font-size: 0.75rem;
+    padding: 0.4rem 0.75rem;
+  }
+
+  .output-icon {
+    font-size: 3rem;
+  }
+
+  .output-label {
+    font-size: 1.25rem;
+  }
+
+  .diagram-legend {
+    flex-direction: column;
+    gap: 0.75rem;
+    align-items: center;
+  }
+}
+
+/* Print Styles */
+@media print {
+  .agent-flow-diagram {
+    background: white;
+    border: 2px solid #667eea;
+  }
+
+  .diagram-header,
+  .phase-name,
+  .agent-name,
+  .data-flow-label,
+  .output-label,
+  .legend-item {
+    color: #2d3748;
+  }
+
+  .connector-arrow {
+    color: #667eea;
+  }
+
+  .flow-phase.active,
+  .flow-phase.complete {
+    animation: none;
+  }
+
+  .agent-icon {
+    animation: none;
+  }
+}

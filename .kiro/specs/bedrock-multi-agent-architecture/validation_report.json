@@ -1,0 +1,49 @@
+{
+  "timestamp": "2025-10-31T15:26:21.507341",
+  "validation_results": {
+    "agent_creation": {
+      "status": "failed",
+      "error": "/opt/homebrew/Cellar/python@3.13/3.13.7/Frameworks/Python.framework/Versions/3.13/Resources/Python.app/Contents/MacOS/Python: can't open file '/Users/tonynarvaez/projects/myownnews-agent/myownnews/.kiro/specs/bedrock-multi-agent-architecture/../../scripts/setup_bedrock_agents.py': [Errno 2] No such file or directory\n"
+    },
+    "agent_console_verification": {
+      "total_agents": 1,
+      "required_agents": 6,
+      "agent_details": {
+        "content_curator": {
+          "status": "not_found"
+        },
+        "social_impact_analyzer": {
+          "status": "not_found"
+        },
+        "story_selector": {
+          "status": "not_found"
+        },
+        "script_writer": {
+          "status": "not_found"
+        },
+        "entertainment_curator": {
+          "status": "not_found"
+        },
+        "media_enhancer": {
+          "status": "not_found"
+        }
+      }
+    },
+    "lambda_deployment": {},
+    "e2e_pipeline_test": {
+      "error": "An error occurred (ValidationError) when calling the DescribeStacks operation: Stack with id curio-news does not exist"
+    },
+    "frontend_validation": {
+      "component_exists": true,
+      "has_status_display": true,
+      "has_execution_time": true,
+      "has_agent_flow": true
+    },
+    "performance_test": {
+      "error": "An error occurred (ValidationError) when calling the DescribeStacks operation: Stack with id curio-news does not exist"
+    },
+    "demo_scenarios": {
+      "error": "An error occurred (ValidationError) when calling the DescribeStacks operation: Stack with id curio-news does not exist"
+    }
+  }
+}

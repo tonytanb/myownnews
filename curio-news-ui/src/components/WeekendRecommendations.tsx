@@ -1,5 +1,8 @@
 import React from 'react';
 import './WeekendRecommendations.css';
+import MovieCard from './MovieCard';
+import SeriesCard from './SeriesCard';
+import PlayCard from './PlayCard';
 
 interface Book {
   title: string;
@@ -23,10 +26,69 @@ interface Event {
   link?: string;
 }
 
-interface WeekendData {
+// New entertainment recommendation interfaces
+export interface TopMovie {
+  title: string;
+  genre: string;
+  rating: string; // e.g., "8.5/10", "95% RT"
+  platform: string; // Netflix, Prime Video, etc.
+  description: string;
+  release_year?: number;
+  runtime?: string; // e.g., "2h 15m"
+  image?: string;
+}
+
+export interface TVSeries {
+  title: string;
+  genre: string;
+  rating: string;
+  platform: string;
+  description: string;
+  seasons: number;
+  episodes_per_season?: number;
+  status: 'ongoing' | 'completed' | 'new_season';
+  image?: string;
+}
+
+export interface TheaterPlay {
+  title: string;
+  genre: string;
+  venue?: string;
+  city?: string;
+  description: string;
+  show_times?: string;
+  ticket_info?: string;
+  rating?: string;
+  image?: string;
+}
+
+export interface MusicRelease {
+  title: string;
+  artist: string;
+  genre: string;
+  platform: string;
+  description: string;
+  release_date: string;
+  rating: string;
+  link?: string;
+  stream_link?: string;
+  image?: string;
+}
+
+export interface EntertainmentRecommendations {
+  top_movies?: TopMovie[];
+  must_watch_series?: TVSeries[];
+  theater_plays?: TheaterPlay[];
+  new_music?: MusicRelease[];
+}
+
+export interface WeekendData {
   books?: Book[];
   movies?: Movie[];
   events?: Event[];
+  entertainment_recommendations?: EntertainmentRecommendations;
+  // Deprecated: keeping for backward compatibility
+  /** @deprecated Use entertainment_recommendations instead */
   cultural_insights?: {
     BookTok_trends?: string;
     streaming_releases?: string;
@@ -116,13 +178,16 @@ const WeekendRecommendations: React.FC<WeekendRecommendationsProps> = ({
       <div className="weekend-section">
         <h3>🎉 Weekend Recommendations</h3>
         <div className="weekend-placeholder">
-          <div className="loading-spinner">⏳</div>
-          <p>🤖 Our Weekend Events Agent is curating the perfect recommendations for you...</p>
+          <div className="loading-dots">
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+          <p>curating your weekend vibe</p>
           <div className="loading-progress">
             <div className="progress-bar">
               <div className="progress-fill"></div>
             </div>
-            <p className="progress-text">Analyzing trending books, movies, and local events...</p>
           </div>
         </div>
       </div>
@@ -171,55 +236,98 @@ const WeekendRecommendations: React.FC<WeekendRecommendationsProps> = ({
           </div>
         )}
 
-        {/* Events Section */}
-        {weekendData.events && weekendData.events.length > 0 && (
-          <div className="recommendation-category">
-            <h4>🎪 Local Events</h4>
-            <div className="events-grid">
-              {weekendData.events.map((event, index) => (
-                <div key={index} className="event-card">
-                  <h5 className="event-name">{event.name}</h5>
-                  <p className="event-location">📍 {event.location}</p>
-                  <p className="event-date">📅 {event.date}</p>
-                  <p className="event-description">{event.description}</p>
-                  {event.link && (
-                    <a 
-                      href={event.link} 
-                      target="_blank" 
-                      rel="noopener noreferrer" 
-                      className="event-link"
-                    >
-                      🔗 Find Events
-                    </a>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
       </div>
 
-      {/* Cultural Insights */}
-      {weekendData.cultural_insights && (
-        <div className="cultural-insights">
-          <h4>🔥 Cultural Pulse</h4>
-          <div className="insights-grid">
-            {weekendData.cultural_insights.BookTok_trends && (
-              <div className="insight-item">
-                <h5>📖 BookTok Trends</h5>
-                <p>{weekendData.cultural_insights.BookTok_trends}</p>
+      {/* Entertainment Hub */}
+      {weekendData.entertainment_recommendations && 
+       ((weekendData.entertainment_recommendations.top_movies?.length ?? 0) > 0 ||
+        (weekendData.entertainment_recommendations.must_watch_series?.length ?? 0) > 0 ||
+        (weekendData.entertainment_recommendations.theater_plays?.length ?? 0) > 0 ||
+        (weekendData.entertainment_recommendations.new_music?.length ?? 0) > 0) && (
+        <div className="entertainment-hub">
+          <h4>🎬 Entertainment Hub</h4>
+          <div className="entertainment-categories">
+            {/* Top Movies */}
+            {weekendData.entertainment_recommendations.top_movies && 
+             weekendData.entertainment_recommendations.top_movies.length > 0 && (
+              <div className="entertainment-category">
+                <h5>🍿 Top Movies</h5>
+                <div className="entertainment-grid">
+                  {weekendData.entertainment_recommendations.top_movies.map((movie, index) => (
+                    <MovieCard key={index} movie={movie} />
+                  ))}
+                </div>
               </div>
             )}
-            {weekendData.cultural_insights.streaming_releases && (
-              <div className="insight-item">
-                <h5>📺 Streaming Buzz</h5>
-                <p>{weekendData.cultural_insights.streaming_releases}</p>
+            
+            {/* Must-Watch Series */}
+            {weekendData.entertainment_recommendations.must_watch_series && 
+             weekendData.entertainment_recommendations.must_watch_series.length > 0 && (
+              <div className="entertainment-category">
+                <h5>📺 Must-Watch Series</h5>
+                <div className="entertainment-grid">
+                  {weekendData.entertainment_recommendations.must_watch_series.map((series, index) => (
+                    <SeriesCard key={index} series={series} />
+                  ))}
+                </div>
               </div>
             )}
-            {weekendData.cultural_insights.social_media_phenomena && (
-              <div className="insight-item">
-                <h5>📱 Social Media</h5>
-                <p>{weekendData.cultural_insights.social_media_phenomena}</p>
+            
+            {/* Theater & Plays */}
+            {weekendData.entertainment_recommendations.theater_plays && 
+             weekendData.entertainment_recommendations.theater_plays.length > 0 && (
+              <div className="entertainment-category">
+                <h5>🎭 Theater & Plays</h5>
+                <div className="entertainment-grid">
+                  {weekendData.entertainment_recommendations.theater_plays.map((play, index) => (
+                    <PlayCard key={index} play={play} />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* New Music Releases */}
+            {weekendData.entertainment_recommendations.new_music && 
+             weekendData.entertainment_recommendations.new_music.length > 0 && (
+              <div className="entertainment-category">
+                <h5>🎵 New Music Releases</h5>
+                <div className="entertainment-grid">
+                  {weekendData.entertainment_recommendations.new_music.map((music, index) => (
+                    <a 
+                      key={index} 
+                      href={music.link || music.stream_link || '#'} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="entertainment-card music-card"
+                      style={{ textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}
+                    >
+                      {music.image && (
+                        <div className="card-image" style={{ 
+                          backgroundImage: `url(${music.image})`,
+                          backgroundSize: 'cover',
+                          backgroundPosition: 'center',
+                          height: '180px',
+                          borderRadius: '8px 8px 0 0',
+                          marginBottom: '12px'
+                        }} />
+                      )}
+                      <div className="card-header">
+                        <div className="platform-badge">{music.platform}</div>
+                        <div className="rating-badge">{music.rating}</div>
+                      </div>
+                      <h6 className="entertainment-title">{music.title}</h6>
+                      <div className="entertainment-meta">
+                        <span className="artist">🎤 {music.artist}</span>
+                        <span className="genre">{music.genre}</span>
+                        <span className="release-date">{music.release_date}</span>
+                      </div>
+                      <p className="entertainment-description">{music.description}</p>
+                      <div className="external-link-indicator">
+                        <span>{music.link ? 'Visit Artist Site →' : 'Listen Now →'}</span>
+                      </div>
+                    </a>
+                  ))}
+                </div>
               </div>
             )}
           </div>

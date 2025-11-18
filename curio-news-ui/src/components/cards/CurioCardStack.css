@@ -1,0 +1,375 @@
+/**
+ * CurioCardStack Styles
+ * Mobile-first card stack container with responsive design
+ * Requirements: 13.1, 13.2, 13.3, 13.4, 13.5
+ */
+
+/* ===== MAIN CONTAINER - MOBILE FIRST ===== */
+/* Requirements: 13.3 - Full viewport on mobile (100vw × 100vh) */
+
+.curio-card-stack {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background: #000;
+  touch-action: pan-y pinch-zoom;
+}
+
+/* Loading state */
+.curio-card-stack--loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.curio-card-stack__loader {
+  color: #fff;
+  font-size: 1.125rem;
+  font-weight: 500;
+  text-align: center;
+  padding: 2rem;
+}
+
+/* Card loading state (Subtask 13.1 - Lazy loading) */
+.curio-card-stack__card-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+}
+
+.curio-card-stack__card-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(255, 255, 255, 0.2);
+  border-top-color: #ec4899;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ===== CARD WRAPPER ===== */
+
+.curio-card-stack__card-wrapper {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  will-change: transform, opacity;
+}
+
+/* ===== PROGRESS INDICATOR ===== */
+
+.curio-card-stack__progress {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.2);
+  z-index: 100;
+  pointer-events: none;
+}
+
+.curio-card-stack__progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #ec4899, #f43f5e);
+  transition: width 0.5s ease;
+  box-shadow: 0 0 10px rgba(236, 72, 153, 0.5);
+}
+
+/* ===== NAVIGATION HINT ===== */
+
+.curio-card-stack__hint {
+  position: absolute;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 50;
+  pointer-events: none;
+  animation: fadeInOut 3s ease-in-out infinite;
+}
+
+.curio-card-stack__hint-text {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  color: #fff;
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+@keyframes fadeInOut {
+  0%, 100% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* ===== RESPONSIVE DESIGN ===== */
+
+/* Desktop: Centered card with border radius and shadow */
+/* Requirements: 13.1, 13.2, 13.4 - Center card on desktop (380px × 680px), 
+   black background outside card area, border-radius and box-shadow */
+@media (min-width: 768px) {
+  .curio-card-stack {
+    width: 380px;
+    height: 680px;
+    margin: 0 auto;
+    border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    overflow: hidden;
+  }
+
+  .curio-card-stack__progress {
+    border-radius: 16px 16px 0 0;
+  }
+
+  .curio-card-stack__hint {
+    bottom: 100px;
+  }
+}
+
+/* Large desktop: Add more spacing */
+@media (min-width: 1024px) {
+  .curio-card-stack {
+    margin-top: 2rem;
+    margin-bottom: 2rem;
+  }
+}
+
+/* ===== ACCESSIBILITY ===== */
+
+/* Screen reader only content */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* Focus styles for keyboard navigation */
+.curio-card-stack:focus {
+  outline: 2px solid #ec4899;
+  outline-offset: 4px;
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .curio-card-stack__card-wrapper {
+    transition: none !important;
+  }
+
+  .curio-card-stack__progress-bar {
+    transition: none !important;
+  }
+
+  .curio-card-stack__hint {
+    animation: none;
+    opacity: 1;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .curio-card-stack__progress {
+    background: #000;
+  }
+
+  .curio-card-stack__progress-bar {
+    background: #fff;
+  }
+
+  .curio-card-stack__hint-text {
+    background: #000;
+    border: 2px solid #fff;
+  }
+}
+
+/* ===== TOUCH OPTIMIZATION ===== */
+
+/* Prevent text selection during swipe */
+.curio-card-stack * {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Allow text selection for accessibility */
+.curio-card-stack__hint-text {
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+  user-select: text;
+}
+
+/* ===== PERFORMANCE OPTIMIZATIONS ===== */
+
+/* GPU acceleration for smooth animations */
+.curio-card-stack__card-wrapper {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
+
+/* Optimize rendering */
+.curio-card-stack {
+  contain: layout style paint;
+}
+
+/* ===== PERFORMANCE OVERLAY (Subtask 13.3) ===== */
+/* Requirements: 12.1, 12.2 */
+
+.curio-card-stack__performance-overlay {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 90%;
+  max-width: 400px;
+  background: rgba(0, 0, 0, 0.95);
+  backdrop-filter: blur(20px);
+  border-radius: 16px;
+  padding: 1.5rem;
+  z-index: 1000;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #fff;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.curio-card-stack__performance-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.curio-card-stack__performance-header h3 {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #fff;
+}
+
+.curio-card-stack__performance-close {
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 2rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  transition: background 0.2s;
+}
+
+.curio-card-stack__performance-close:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.curio-card-stack__performance-content {
+  margin-bottom: 1rem;
+}
+
+.curio-card-stack__performance-hint {
+  text-align: center;
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.5);
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.performance-overlay__status {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  padding: 0.75rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+}
+
+.performance-overlay__indicator {
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.performance-overlay__indicator.good {
+  color: #10b981;
+}
+
+.performance-overlay__indicator.warning {
+  color: #f59e0b;
+}
+
+.performance-overlay__status-text {
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+.performance-overlay__metrics {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.performance-overlay__metric {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.performance-overlay__metric:last-child {
+  border-bottom: none;
+}
+
+.performance-overlay__metric-label {
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.performance-overlay__metric-value {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #fff;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Desktop adjustments */
+@media (min-width: 768px) {
+  .curio-card-stack__performance-overlay {
+    width: 400px;
+  }
+}

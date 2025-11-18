@@ -174,15 +174,35 @@ def _pull_articles(categories, limit):
         ]
         all_items.extend(fallback_items)
     
-    # Remove duplicates based on title similarity
+    # Remove duplicates based on title similarity, preferring articles with images
     unique_items = []
-    seen_titles = set()
+    seen_titles = {}
     
     for item in all_items:
         title_key = item["title"][:50].lower().strip()
         if title_key not in seen_titles:
-            seen_titles.add(title_key)
+            seen_titles[title_key] = item
             unique_items.append(item)
+        else:
+            # If we already have this title, prefer the one with an image
+            existing_item = seen_titles[title_key]
+            current_has_image = item.get("image", "") and item["image"].startswith("http")
+            existing_has_image = existing_item.get("image", "") and existing_item["image"].startswith("http")
+            
+            if current_has_image and not existing_has_image:
+                # Replace the existing item with the one that has an image
+                index = unique_items.index(existing_item)
+                unique_items[index] = item
+                seen_titles[title_key] = item
+            elif not current_has_image and existing_has_image:
+                # Keep the existing item (it has an image)
+                pass
+            elif current_has_image and existing_has_image:
+                # Both have images, prefer NewsAPI (usually better quality)
+                if item.get("source", "") == "NewsAPI" or "newsapi" in item.get("source", "").lower():
+                    index = unique_items.index(existing_item)
+                    unique_items[index] = item
+                    seen_titles[title_key] = item
     
     print(f"Total unique articles: {len(unique_items)}")
     
@@ -596,13 +616,16 @@ def lambda_handler(event, context):
     
     # Format news for frontend
     news_items = []
-    for item in items[:3]:
+    for item in items[:5]:  # Include more items for better selection
         news_items.append({
             "title": item.get("title", ""),
             "category": item.get("category", "").upper().replace("-", " "),
             "summary": item.get("summary", ""),
             "full_text": item.get("summary", ""),
-            "image": item.get("image", "")
+            "image": item.get("image", ""),  # This will include real URLs from NewsAPI
+            "source": item.get("source", ""),
+            "relevance_score": 0.9,  # Default relevance score
+            "selection_reason": f"Selected for {item.get('category', 'general')} category relevance and current trending status."
         })
     
     # Return format for frontend with CORS

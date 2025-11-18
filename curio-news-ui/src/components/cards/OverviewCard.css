@@ -1,0 +1,231 @@
+/**
+ * OverviewCard Styles
+ * Mobile-first card design with centered content and smooth animations
+ * Requirements: 13.3 - Mobile-first with optimized text sizes
+ */
+
+.overview-card {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Content container - centered */
+.overview-card__content {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 1.5rem;
+  max-width: 90%;
+}
+
+/* Sparkles icon */
+.overview-card__icon {
+  margin-bottom: 1.5rem;
+}
+
+.overview-card__sparkles {
+  color: white;
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.3));
+  animation: sparkle 2s ease-in-out infinite;
+}
+
+@keyframes sparkle {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.1);
+  }
+}
+
+/* Title - Requirements: 13.3 - Mobile optimized text size */
+/* Requirements: 8.4 - Ensure contrast ratio meets WCAG 2.1 AA (4.5:1) */
+.overview-card__title {
+  font-size: 1.75rem; /* 28px - better for mobile */
+  font-weight: 700;
+  color: #ffffff; /* Pure white for maximum contrast */
+  margin: 0 0 1rem 0;
+  /* Enhanced text shadow for better contrast */
+  text-shadow: 
+    0 2px 8px rgba(0, 0, 0, 0.8),
+    0 1px 4px rgba(0, 0, 0, 0.9),
+    1px 1px 2px rgba(0, 0, 0, 0.7);
+  line-height: 1.2;
+}
+
+/* Date - Requirements: 13.3 - Mobile optimized text size */
+/* Requirements: 8.4 - Ensure contrast ratio meets WCAG 2.1 AA (4.5:1) */
+.overview-card__date {
+  font-size: 0.9375rem; /* 15px - better readability */
+  font-weight: 500;
+  color: #f9fafb; /* gray-50 - very light for better contrast */
+  margin: 0 0 0.5rem 0;
+  /* Enhanced text shadow for better contrast */
+  text-shadow: 
+    0 2px 6px rgba(0, 0, 0, 0.8),
+    0 1px 3px rgba(0, 0, 0, 0.9);
+}
+
+/* Story count - Requirements: 13.3 - Mobile optimized text size */
+/* Requirements: 8.4 - Ensure contrast ratio meets WCAG 2.1 AA (4.5:1) */
+.overview-card__story-count {
+  font-size: 0.875rem; /* 14px */
+  font-weight: 500; /* Increased weight for better readability */
+  color: #f3f4f6; /* gray-100 - lighter for better contrast */
+  margin: 0 0 1.5rem 0;
+  /* Enhanced text shadow for better contrast */
+  text-shadow: 
+    0 2px 6px rgba(0, 0, 0, 0.8),
+    0 1px 3px rgba(0, 0, 0, 0.9);
+}
+
+/* Highlights container */
+.overview-card__highlights {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+  margin-bottom: 1.5rem;
+  width: 100%;
+  max-width: 320px;
+}
+
+/* Individual highlight - Requirements: 13.3 - Mobile optimized text size */
+/* Requirements: 8.4 - Ensure contrast ratio meets WCAG 2.1 AA (4.5:1) */
+.overview-card__highlight {
+  font-size: 0.9375rem; /* 15px - better mobile readability */
+  font-weight: 500; /* Increased weight for better readability */
+  color: #f9fafb; /* gray-50 - very light for better contrast */
+  text-align: left;
+  padding: 0.5rem 0;
+  /* Enhanced text shadow for better contrast */
+  text-shadow: 
+    0 2px 6px rgba(0, 0, 0, 0.8),
+    0 1px 3px rgba(0, 0, 0, 0.9);
+  line-height: 1.5;
+}
+
+/* Call to action - Requirements: 13.5 - Touch-friendly button */
+/* Requirements: 8.4 - Ensure contrast ratio meets WCAG 2.1 AA (4.5:1) */
+.overview-card__cta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  
+  /* Touch-friendly minimum size */
+  min-height: 44px;
+  
+  /* Enhanced background for better contrast */
+  background: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(10px);
+  border: 1.5px solid rgba(255, 255, 255, 0.4);
+  border-radius: 9999px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  transition: all 0.3s ease;
+}
+
+.overview-card:hover .overview-card__cta {
+  background: rgba(255, 255, 255, 0.35);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: translateX(4px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.5);
+}
+
+.overview-card__cta-text {
+  font-size: 0.9375rem; /* 15px - better mobile readability */
+  font-weight: 700; /* Increased weight for better readability */
+  color: #ffffff; /* Pure white for maximum contrast */
+  /* Enhanced text shadow for better contrast */
+  text-shadow: 
+    0 2px 6px rgba(0, 0, 0, 0.8),
+    0 1px 3px rgba(0, 0, 0, 0.9);
+}
+
+.overview-card__cta-arrow {
+  font-size: 1.25rem;
+  color: white;
+  transition: transform 0.3s ease;
+}
+
+.overview-card:hover .overview-card__cta-arrow {
+  transform: translateX(4px);
+}
+
+/* Curio watermark */
+.overview-card__watermark {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  font-size: 0.875rem;
+  font-weight: 300;
+  font-style: italic;
+  color: rgba(255, 255, 255, 0.6);
+  z-index: 3;
+  user-select: none;
+  pointer-events: none;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+}
+
+/* Small mobile adjustments */
+@media (max-width: 380px) {
+  .overview-card__content {
+    padding: 1.25rem;
+  }
+  
+  .overview-card__title {
+    font-size: 1.5rem; /* 24px */
+  }
+  
+  .overview-card__date {
+    font-size: 0.875rem; /* 14px */
+  }
+
+  .overview-card__highlights {
+    max-width: 280px;
+    gap: 0.5rem;
+  }
+
+  .overview-card__highlight {
+    font-size: 0.875rem; /* 14px */
+  }
+  
+  .overview-card__cta-text {
+    font-size: 0.875rem; /* 14px */
+  }
+}
+
+/* Desktop: larger text for better readability */
+@media (min-width: 768px) {
+  .overview-card__content {
+    max-width: 340px;
+    padding: 2rem;
+  }
+  
+  .overview-card__title {
+    font-size: 2rem; /* 32px */
+  }
+  
+  .overview-card__date {
+    font-size: 1rem; /* 16px */
+  }
+  
+  .overview-card__highlight {
+    font-size: 0.875rem; /* 14px */
+  }
+  
+  .overview-card__cta-text {
+    font-size: 0.875rem; /* 14px */
+  }
+}

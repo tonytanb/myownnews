@@ -1,0 +1,59 @@
+{
+  "overall_success": false,
+  "critical_success": false,
+  "success_rate": 83.33333333333334,
+  "total_tests": 6,
+  "passed_tests": 5,
+  "test_results": [
+    {
+      "test": "Bootstrap Endpoint",
+      "success": true,
+      "message": "Complete content: 8 news items, 973 char script, 7 sources",
+      "timestamp": "2025-10-30T06:19:12.510924",
+      "data": null
+    },
+    {
+      "test": "Content Generation",
+      "success": true,
+      "message": "Content generated successfully with runId: c4cfeb8b",
+      "timestamp": "2025-10-30T06:19:18.242944",
+      "data": null
+    },
+    {
+      "test": "Latest Endpoint",
+      "success": true,
+      "message": "Latest endpoint returns valid content",
+      "timestamp": "2025-10-30T06:19:18.521656",
+      "data": null
+    },
+    {
+      "test": "Audio URL Accessibility",
+      "success": false,
+      "message": "Audio URL not accessible: HTTP 403",
+      "timestamp": "2025-10-30T06:19:19.069962",
+      "data": null
+    },
+    {
+      "test": "CORS Headers",
+      "success": true,
+      "message": "All CORS headers present",
+      "timestamp": "2025-10-30T06:19:19.136845",
+      "data": null
+    },
+    {
+      "test": "Error Handling",
+      "success": true,
+      "message": "Proper HTTP error code: 403",
+      "timestamp": "2025-10-30T06:19:19.210414",
+      "data": null
+    }
+  ],
+  "critical_systems": {
+    "bootstrap_endpoint": true,
+    "content_generation": true,
+    "audio_accessibility": false,
+    "latest_endpoint": true,
+    "cors_headers": true,
+    "error_handling": true
+  }
+}

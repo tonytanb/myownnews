@@ -13,30 +13,71 @@ interface InteractiveTranscriptProps {
   currentTime: number;
 }
 
+/**
+ * Clean script by removing stage directions, prompt text, and meta-instructions
+ */
+function cleanScript(rawScript: string): string {
+  if (!rawScript) return '';
+  
+  let cleaned = rawScript;
+  
+  // Remove stage directions in asterisks: *like this*
+  cleaned = cleaned.replace(/\*[^*]+\*/g, '');
+  
+  // Remove common prompt phrases at the start
+  cleaned = cleaned.replace(/^(Hey fam,?|Welcome back to|Hi everyone,?|Good morning,?|Good evening,?)\s*/i, '');
+  
+  // Remove meta-instructions in brackets
+  cleaned = cleaned.replace(/\[[^\]]+\]/g, '');
+  
+  // Remove parenthetical stage directions
+  cleaned = cleaned.replace(/\([^)]*tone[^)]*\)/gi, '');
+  cleaned = cleaned.replace(/\([^)]*pause[^)]*\)/gi, '');
+  
+  // Normalize whitespace
+  cleaned = cleaned.replace(/\s+/g, ' ').trim();
+  
+  return cleaned;
+}
+
 const InteractiveTranscript: React.FC<InteractiveTranscriptProps> = ({
   script,
   wordTimings,
   currentTime
 }) => {
+  // Clean the script before processing
+  const cleanedScript = cleanScript(script);
   const [currentWordIndex, setCurrentWordIndex] = useState<number>(-1);
   const [isPlaying, setIsPlaying] = useState(false);
   const transcriptRef = useRef<HTMLDivElement>(null);
   const wordsRef = useRef<(HTMLSpanElement | null)[]>([]);
 
-  // Split script into words and create mock timings if none provided
-  const words = script ? script.split(/\s+/).filter(word => word.length > 0) : [];
+  // Split cleaned script into words and create mock timings if none provided
+  const words = cleanedScript ? cleanedScript.split(/\s+/).filter(word => word.length > 0) : [];
   
   // Generate mock word timings if not provided (for demo purposes)
   const mockWordTimings: WordTiming[] = words.map((word, index) => {
-    // More realistic timing based on word length
-    const baseTime = index * 0.4; // Base 0.4 seconds per word
+    // More realistic timing based on word length and natural speech patterns
+    let cumulativeTime = 0;
+    
+    // Calculate cumulative time based on previous words
+    for (let i = 0; i < index; i++) {
+      const prevWord = words[i];
+      const prevWordLength = prevWord.length;
+      // Average speaking rate: 150-160 words per minute = ~0.4 seconds per word
+      // Adjust for word length and add natural pauses
+      const wordDuration = Math.max(0.25, Math.min(0.7, prevWordLength * 0.06 + 0.2));
+      const pause = prevWord.endsWith('.') || prevWord.endsWith('!') || prevWord.endsWith('?') ? 0.3 : 0.1;
+      cumulativeTime += wordDuration + pause;
+    }
+    
     const wordLength = word.length;
-    const duration = Math.max(0.2, Math.min(0.8, wordLength * 0.05)); // 0.2-0.8 seconds based on length
+    const duration = Math.max(0.25, Math.min(0.7, wordLength * 0.06 + 0.2));
     
     return {
       word: word.replace(/[^\w]/g, ''), // Remove punctuation for matching
-      start: baseTime,
-      end: baseTime + duration
+      start: cumulativeTime,
+      end: cumulativeTime + duration
     };
   });
 
@@ -65,31 +106,44 @@ const InteractiveTranscript: React.FC<InteractiveTranscriptProps> = ({
   useEffect(() => {
     if (!isPlaying || currentTime <= 0) return;
 
-    // Find the current word based on timing with better precision
+    // Speed up timings by 25% to match faster audio playback
+    const SPEED_MULTIPLIER = 0.75; // 0.75 = 25% faster (divide time by 1.25)
+    const adjustedTime = currentTime * SPEED_MULTIPLIER;
+
+    // Find the current word based on timing - improved algorithm
     let wordIndex = -1;
     
-    // First try exact timing match
-    for (let i = 0; i < effectiveTimings.length; i++) {
+    // Use a more progressive approach - find the latest word that should have started
+    for (let i = effectiveTimings.length - 1; i >= 0; i--) {
       const timing = effectiveTimings[i];
-      if (currentTime >= timing.start && currentTime <= timing.end) {
-        wordIndex = i;
-        break;
-      }
-    }
-    
-    // If no exact match, find the closest word
-    if (wordIndex === -1) {
-      let closestDistance = Infinity;
-      for (let i = 0; i < effectiveTimings.length; i++) {
-        const timing = effectiveTimings[i];
-        const distance = Math.abs(currentTime - timing.start);
-        if (distance < closestDistance && currentTime >= timing.start - 0.1) {
-          closestDistance = distance;
+      if (adjustedTime >= timing.start) {
+        // Check if we're still within a reasonable range of this word
+        const timeSinceStart = adjustedTime - timing.start;
+        const expectedDuration = timing.end - timing.start;
+        
+        // Allow some flexibility - word can be highlighted a bit longer than its exact timing
+        if (timeSinceStart <= expectedDuration + 0.3) {
           wordIndex = i;
+          break;
         }
       }
     }
     
+    // Fallback: if no word found, find the closest upcoming word
+    if (wordIndex === -1) {
+      for (let i = 0; i < effectiveTimings.length; i++) {
+        const timing = effectiveTimings[i];
+        if (timing.start > adjustedTime) {
+          // If we're very close to the next word (within 0.2s), highlight it
+          if (timing.start - adjustedTime <= 0.2) {
+            wordIndex = i;
+          }
+          break;
+        }
+      }
+    }
+    
+    // Only update if we have a valid word and it's different from current
     if (wordIndex !== -1 && wordIndex !== currentWordIndex) {
       setCurrentWordIndex(wordIndex);
       
@@ -108,6 +162,11 @@ const InteractiveTranscript: React.FC<InteractiveTranscriptProps> = ({
         }
       }
     }
+    
+    // Clear highlighting if we're past all words
+    if (adjustedTime > effectiveTimings[effectiveTimings.length - 1]?.end + 1) {
+      setCurrentWordIndex(-1);
+    }
   }, [currentTime, currentWordIndex, effectiveTimings, isPlaying]);
 
   const handleWordClick = (wordIndex: number) => {
@@ -124,13 +183,12 @@ const InteractiveTranscript: React.FC<InteractiveTranscriptProps> = ({
     }
   };
 
-  // Show loading state if no script is available
-  if (!script) {
+  // Show empty state if no script is available
+  if (!cleanedScript) {
     return (
       <div className="transcript-section">
-        <h2>📝 Interactive Transcript</h2>
         <div className="transcript-loading">
-          <p>Loading transcript...</p>
+          <p>Transcript will appear here once audio is generated</p>
         </div>
       </div>
     );
@@ -138,21 +196,6 @@ const InteractiveTranscript: React.FC<InteractiveTranscriptProps> = ({
 
   return (
     <div className="transcript-section">
-      <h2>📝 Interactive Transcript</h2>
-      <div className="transcript-instructions">
-        Click any word to jump to that point in the audio
-      </div>
-      
-      <div className="transcript-stats">
-        <span>Words: {words.length}</span>
-        {wordTimings.length > 0 && (
-          <span>Timings: {wordTimings.length}</span>
-        )}
-        {currentTime > 0 && (
-          <span>Time: {currentTime.toFixed(1)}s</span>
-        )}
-      </div>
-      
       <div 
         ref={transcriptRef}
         className="transcript-container"

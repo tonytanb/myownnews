@@ -1,0 +1,54 @@
+{
+  "timestamp": "2025-11-18T05:28:43.224392",
+  "tests": [
+    {
+      "name": "Feature Flag Configuration",
+      "status": "PASS",
+      "details": {
+        "file": "curio-news-ui/.env.production",
+        "flag_enabled": true
+      }
+    },
+    {
+      "name": "Card UI Components",
+      "status": "PASS",
+      "details": {
+        "total_files": 7,
+        "missing_files": []
+      }
+    },
+    {
+      "name": "API Health Check",
+      "status": "PASS",
+      "response_time_ms": 7554.3060000000005,
+      "details": "Status: 200, Fields: ['audioUrl', 'script', 'word_timings', 'news_items', 'sources', 'agentOutputs', 'generatedAt', 'why', 'traceId', 'quality_score', 'validation_results', 'orchestration_trace', 'orchestration_time', 'agents_used', 'multi_agent_enabled', 'orchestration_type', 'bedrock_agents_used']"
+    },
+    {
+      "name": "Card Data Transformation",
+      "status": "FAIL",
+      "details": {
+        "has_news_items": true,
+        "has_script": true,
+        "has_word_timings": false,
+        "has_agent_outputs": true
+      }
+    },
+    {
+      "name": "Performance Metrics",
+      "status": "WARN",
+      "details": {
+        "api_response_time_ms": 8976.802110671997,
+        "api_response_size_kb": 659.5009765625,
+        "api_within_threshold": false,
+        "size_within_threshold": false
+      }
+    }
+  ],
+  "performance_metrics": {
+    "api_response_time_ms": 8976.802110671997,
+    "api_response_size_kb": 659.5009765625,
+    "api_within_threshold": false,
+    "size_within_threshold": false
+  },
+  "overall_status": "FAILED"
+}

@@ -1,1 +1,1 @@
-http://curio-news-frontend-1760730768.s3-website-us-west-2.amazonaws.com
+http://curio-news-frontend-1761843234.s3-website-us-west-2.amazonaws.com

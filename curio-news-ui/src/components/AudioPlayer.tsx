@@ -3,15 +3,19 @@ import React from "react";
 interface AudioPlayerProps {
   onContentUpdate?: (data: any) => void;
   onTimeUpdate?: (time: number) => void;
+  showMetadata?: boolean;
 }
 
-export default function AudioPlayer({ onContentUpdate, onTimeUpdate }: AudioPlayerProps) {
+export default function AudioPlayer({ onContentUpdate, onTimeUpdate, showMetadata = false }: AudioPlayerProps) {
   const audioRef = React.useRef<HTMLAudioElement>(null);
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [meta, setMeta] = React.useState<{sources:string[]; generatedAt:string; why:string; traceId?:string} | null>(null);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [isPlaying, setIsPlaying] = React.useState(false);
+  const [currentTime, setCurrentTime] = React.useState(0);
+  const [duration, setDuration] = React.useState(0);
+  const [volume, setVolume] = React.useState(1);
+  const [audioLoaded, setAudioLoaded] = React.useState(false);
 
   // Listen for transcript seek events
   React.useEffect(() => {
@@ -70,8 +74,19 @@ export default function AudioPlayer({ onContentUpdate, onTimeUpdate }: AudioPlay
         
         // Add comprehensive audio event listeners
         audioRef.current.ontimeupdate = () => {
-          if (onTimeUpdate && audioRef.current) {
-            onTimeUpdate(audioRef.current.currentTime);
+          if (audioRef.current) {
+            const time = audioRef.current.currentTime;
+            setCurrentTime(time);
+            if (onTimeUpdate) {
+              onTimeUpdate(time);
+            }
+          }
+        };
+
+        audioRef.current.onloadedmetadata = () => {
+          if (audioRef.current) {
+            setDuration(audioRef.current.duration);
+            setAudioLoaded(true);
           }
         };
 
@@ -95,6 +110,9 @@ export default function AudioPlayer({ onContentUpdate, onTimeUpdate }: AudioPlay
           const endEvent = new CustomEvent('audio-end');
           window.dispatchEvent(endEvent);
         };
+
+        // Set initial volume
+        audioRef.current.volume = volume;
         
         await audioRef.current.play();
       }
@@ -183,14 +201,111 @@ export default function AudioPlayer({ onContentUpdate, onTimeUpdate }: AudioPlay
     }
   };
 
+  // Audio control functions
+  const togglePlayPause = () => {
+    if (audioRef.current) {
+      if (isPlaying) {
+        audioRef.current.pause();
+      } else {
+        audioRef.current.play();
+      }
+    }
+  };
+
+  const skipForward = () => {
+    if (audioRef.current) {
+      audioRef.current.currentTime = Math.min(audioRef.current.currentTime + 10, duration);
+    }
+  };
+
+  const skipBackward = () => {
+    if (audioRef.current) {
+      audioRef.current.currentTime = Math.max(audioRef.current.currentTime - 10, 0);
+    }
+  };
+
+  const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newVolume = parseFloat(e.target.value);
+    setVolume(newVolume);
+    if (audioRef.current) {
+      audioRef.current.volume = newVolume;
+    }
+  };
+
+  const formatTime = (time: number) => {
+    const minutes = Math.floor(time / 60);
+    const seconds = Math.floor(time % 60);
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+  };
+
   return (
     <div className="curio-audio">
       <button onClick={playLatest} disabled={loading} aria-busy={loading}>
         {loading ? "Preparing brief…" : "▶ Play Today's 90-sec Brief"}
       </button>
-      <audio ref={audioRef} controls preload="none" />
+      
+      {/* Enhanced Audio Controls */}
+      {audioLoaded && (
+        <div className="audio-controls-container">
+          <div className="audio-controls">
+            <button 
+              className="control-btn skip-btn" 
+              onClick={skipBackward}
+              title="Skip back 10 seconds"
+              disabled={!audioLoaded}
+            >
+              -10
+            </button>
+            
+            <button 
+              className="control-btn play-pause-btn" 
+              onClick={togglePlayPause}
+              title={isPlaying ? "Pause" : "Play"}
+              disabled={!audioLoaded}
+            >
+              {isPlaying ? "||" : "▶"}
+            </button>
+            
+            <button 
+              className="control-btn skip-btn" 
+              onClick={skipForward}
+              title="Skip forward 10 seconds"
+              disabled={!audioLoaded}
+            >
+              +10
+            </button>
+          </div>
+          
+          <div className="audio-progress">
+            <span className="time-display">{formatTime(currentTime)}</span>
+            <div className="progress-bar-container">
+              <div 
+                className="progress-bar"
+                style={{ width: `${duration > 0 ? (currentTime / duration) * 100 : 0}%` }}
+              />
+            </div>
+            <span className="time-display">{formatTime(duration)}</span>
+          </div>
+          
+          <div className="volume-control">
+            <input
+              type="range"
+              min="0"
+              max="1"
+              step="0.1"
+              value={volume}
+              onChange={handleVolumeChange}
+              className="volume-slider"
+              title="Volume"
+            />
+            <span className="volume-percentage">{Math.round(volume * 100)}%</span>
+          </div>
+        </div>
+      )}
+      
+      <audio ref={audioRef} preload="none" style={{ display: 'none' }} />
       {error && <p style={{color:"crimson"}}>Error: {error}</p>}
-      {meta && (
+      {showMetadata && meta && (
         <div className="provenance">
           <p><strong>Generated:</strong> {new Date(meta.generatedAt).toLocaleString()}</p>
           <p><strong>Why it made the brief:</strong> {meta.why}</p>

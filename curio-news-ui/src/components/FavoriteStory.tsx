@@ -3,13 +3,12 @@ import './FavoriteStory.css';
 
 interface FavoriteStoryProps {
   favoriteData?: {
+    title?: string;
+    summary?: string;
+    category?: string;
+    source?: string;
+    image?: string;
     reasoning?: string;
-    story?: {
-      title: string;
-      summary: string;
-      category: string;
-      source: string;
-    };
     whyFascinating?: string;
   };
   isLoading?: boolean;
@@ -91,13 +90,16 @@ const FavoriteStory: React.FC<FavoriteStoryProps> = ({
       <div className="favorite-story-section">
         <h3>⭐ Today's Favorite Story</h3>
         <div className="favorite-placeholder">
-          <div className="loading-spinner">⏳</div>
-          <p>🤖 Our Favorite Selector Agent is analyzing stories to find the most fascinating one...</p>
+          <div className="loading-dots">
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+          <p>finding the most impactful story</p>
           <div className="loading-progress">
             <div className="progress-bar">
               <div className="progress-fill"></div>
             </div>
-            <p className="progress-text">Analyzing story relevance and engagement potential...</p>
           </div>
         </div>
       </div>
@@ -111,12 +113,19 @@ const FavoriteStory: React.FC<FavoriteStoryProps> = ({
         <span className="favorite-badge">AI Selected</span>
       </div>
       
-      {favoriteData.story && (
+      {favoriteData.title && (
         <div className="favorite-story-card">
-          <div className="story-category">{favoriteData.story.category}</div>
-          <h4 className="story-title">{favoriteData.story.title}</h4>
-          <p className="story-summary">{favoriteData.story.summary}</p>
-          <div className="story-source">Source: {favoriteData.story.source}</div>
+          {favoriteData.image && (
+            <div className="story-image">
+              <img src={favoriteData.image} alt={favoriteData.title} />
+            </div>
+          )}
+          <div className="story-content">
+            <div className="story-category">{favoriteData.category}</div>
+            <h4 className="story-title">{favoriteData.title}</h4>
+            <p className="story-summary">{favoriteData.summary}</p>
+            <div className="story-source">Source: {favoriteData.source}</div>
+          </div>
         </div>
       )}
       

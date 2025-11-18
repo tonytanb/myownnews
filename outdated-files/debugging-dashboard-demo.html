@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Curio News - Debugging Dashboard Demo</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: white;
+        }
+        
+        .demo-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            text-align: center;
+        }
+        
+        .demo-header {
+            margin-bottom: 40px;
+        }
+        
+        .demo-header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 16px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .demo-header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            max-width: 800px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+        
+        .demo-features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+            margin: 40px 0;
+        }
+        
+        .feature-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 24px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+        }
+        
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 16px;
+        }
+        
+        .feature-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+        
+        .feature-description {
+            font-size: 1rem;
+            opacity: 0.9;
+            line-height: 1.5;
+        }
+        
+        .demo-buttons {
+            margin: 40px 0;
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .demo-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .demo-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            border-color: rgba(255, 255, 255, 0.5);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .demo-btn.primary {
+            background: rgba(76, 175, 80, 0.3);
+            border-color: rgba(76, 175, 80, 0.5);
+        }
+        
+        .demo-btn.primary:hover {
+            background: rgba(76, 175, 80, 0.4);
+            border-color: rgba(76, 175, 80, 0.6);
+        }
+        
+        .api-endpoints {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 24px;
+            margin: 40px 0;
+            text-align: left;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .api-endpoints h3 {
+            text-align: center;
+            margin-bottom: 24px;
+            font-size: 1.5rem;
+        }
+        
+        .endpoint {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 16px;
+            font-family: 'Monaco', 'Menlo', monospace;
+        }
+        
+        .endpoint-method {
+            color: #4caf50;
+            font-weight: 600;
+            margin-right: 12px;
+        }
+        
+        .endpoint-path {
+            color: #fff;
+            font-weight: 500;
+        }
+        
+        .endpoint-description {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9rem;
+            margin-top: 8px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .status-indicator.ready {
+            background: #4caf50;
+            box-shadow: 0 0 8px rgba(76, 175, 80, 0.5);
+        }
+        
+        .status-indicator.development {
+            background: #ff9800;
+            box-shadow: 0 0 8px rgba(255, 152, 0, 0.5);
+        }
+        
+        @media (max-width: 768px) {
+            .demo-header h1 {
+                font-size: 2rem;
+            }
+            
+            .demo-header p {
+                font-size: 1rem;
+            }
+            
+            .demo-features {
+                grid-template-columns: 1fr;
+            }
+            
+            .demo-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-container">
+        <div class="demo-header">
+            <h1>🛠️ Debugging Dashboard</h1>
+            <p>
+                Comprehensive agent analysis and troubleshooting tools for the Curio News AI orchestration system.
+                Monitor performance, analyze patterns, and resolve issues with powerful debugging capabilities.
+            </p>
+        </div>
+        
+        <div class="demo-features">
+            <div class="feature-card">
+                <div class="feature-icon">📊</div>
+                <div class="feature-title">Agent Performance Analysis</div>
+                <div class="feature-description">
+                    Real-time monitoring of all 6 specialized agents with success rates, execution times, 
+                    health scores, and performance trends over time.
+                </div>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">🔍</div>
+                <div class="feature-title">Pattern Recognition</div>
+                <div class="feature-description">
+                    Automatic detection of failure patterns, performance degradation, and system-wide issues 
+                    with intelligent recommendations for resolution.
+                </div>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">📈</div>
+                <div class="feature-title">Performance Visualization</div>
+                <div class="feature-description">
+                    Interactive charts and graphs showing agent health scores, execution time comparisons, 
+                    success rate trends, and failure distribution analysis.
+                </div>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">🚨</div>
+                <div class="feature-title">Real-time Alerts</div>
+                <div class="feature-description">
+                    CloudWatch integration with active alerts, system health monitoring, and automatic 
+                    detection of critical issues requiring immediate attention.
+                </div>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">🔧</div>
+                <div class="feature-title">Troubleshooting Guides</div>
+                <div class="feature-description">
+                    Comprehensive guides for common issues including symptoms, root causes, solutions, 
+                    and prevention tips for agent timeouts, throttling, and validation failures.
+                </div>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">⚡</div>
+                <div class="feature-title">System Optimization</div>
+                <div class="feature-description">
+                    Performance recommendations, resource usage monitoring, and optimization suggestions 
+                    to improve overall system efficiency and reliability.
+                </div>
+            </div>
+        </div>
+        
+        <div class="api-endpoints">
+            <h3>🔗 Available API Endpoints</h3>
+            
+            <div class="endpoint">
+                <span class="status-indicator ready"></span>
+                <span class="endpoint-method">GET</span>
+                <span class="endpoint-path">/debugging/analysis</span>
+                <div class="endpoint-description">
+                    Get comprehensive agent analysis report with performance metrics, failure patterns, and recommendations.
+                    Query parameters: agent_name (optional), hours_back (default: 24)
+                </div>
+            </div>
+            
+            <div class="endpoint">
+                <span class="status-indicator ready"></span>
+                <span class="endpoint-method">GET</span>
+                <span class="endpoint-path">/debugging/realtime</span>
+                <div class="endpoint-description">
+                    Get real-time dashboard data including active orchestrations, system health, and current alerts.
+                    Optional path parameter: run_id for specific orchestration details
+                </div>
+            </div>
+            
+            <div class="endpoint">
+                <span class="status-indicator ready"></span>
+                <span class="endpoint-method">GET</span>
+                <span class="endpoint-path">/debugging/troubleshooting</span>
+                <div class="endpoint-description">
+                    Get troubleshooting guides for common issues. Optional path parameter: issue_type for specific guide.
+                    Available guides: AGENT_TIMEOUT, BEDROCK_THROTTLING, CONTENT_VALIDATION, ORCHESTRATION_FAILURE, PERFORMANCE_DEGRADATION
+                </div>
+            </div>
+            
+            <div class="endpoint">
+                <span class="status-indicator ready"></span>
+                <span class="endpoint-method">GET</span>
+                <span class="endpoint-path">/debugging/visualization</span>
+                <div class="endpoint-description">
+                    Get performance visualization data for charts and graphs.
+                    Query parameters: hours_back (default: 24)
+                </div>
+            </div>
+        </div>
+        
+        <div class="demo-buttons">
+            <a href="https://nqot0dir0h.execute-api.us-west-2.amazonaws.com/prod/debugging/analysis" 
+               class="demo-btn" target="_blank">
+                📊 View Analysis API
+            </a>
+            <a href="https://nqot0dir0h.execute-api.us-west-2.amazonaws.com/prod/debugging/realtime" 
+               class="demo-btn" target="_blank">
+                ⚡ Real-time Data API
+            </a>
+            <a href="https://nqot0dir0h.execute-api.us-west-2.amazonaws.com/prod/debugging/troubleshooting" 
+               class="demo-btn" target="_blank">
+                🔧 Troubleshooting API
+            </a>
+            <a href="https://d3bnz1g5uf5ywj.cloudfront.net/" 
+               class="demo-btn primary" target="_blank">
+                🚀 Open Curio News App
+            </a>
+        </div>
+        
+        <div style="margin-top: 60px; padding-top: 40px; border-top: 1px solid rgba(255, 255, 255, 0.2);">
+            <p style="opacity: 0.8; font-size: 0.9rem;">
+                🎯 <strong>Implementation Status:</strong> Task 6.3 - Build debugging dashboard for agent analysis<br>
+                ✅ Comprehensive debugging dashboard system implemented<br>
+                ✅ Agent performance analysis and pattern recognition<br>
+                ✅ Troubleshooting guides and visualization tools<br>
+                ✅ Real-time monitoring and alerting integration
+            </p>
+        </div>
+    </div>
+    
+    <script>
+        // Add some interactive behavior
+        document.addEventListener('DOMContentLoaded', function() {
+            const featureCards = document.querySelectorAll('.feature-card');
+            
+            featureCards.forEach(card => {
+                card.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-8px) scale(1.02)';
+                });
+                
+                card.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0) scale(1)';
+                });
+            });
+            
+            // Add status indicators animation
+            const statusIndicators = document.querySelectorAll('.status-indicator.ready');
+            statusIndicators.forEach(indicator => {
+                setInterval(() => {
+                    indicator.style.opacity = '0.5';
+                    setTimeout(() => {
+                        indicator.style.opacity = '1';
+                    }, 500);
+                }, 2000);
+            });
+        });
+    </script>
+</body>
+</html>

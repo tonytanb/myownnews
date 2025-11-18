@@ -1,0 +1,380 @@
+/**
+ * StoryCard Styles
+ * Full-screen card layout with media background, content area, and controls
+ */
+
+/* Main Card Container - Mobile First */
+/* Requirements: 13.3 - Full viewport on mobile */
+.story-card {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  cursor: pointer;
+  background: #000;
+  
+  /* Ensure proper stacking context */
+  isolation: isolate;
+}
+
+/* Desktop: Fixed dimensions */
+@media (min-width: 768px) {
+  .story-card {
+    width: 380px;
+    height: 680px;
+  }
+}
+
+/* Curio Watermark - Top Right */
+.story-card__watermark {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 10;
+  
+  /* Typography */
+  font-size: 0.875rem;
+  font-weight: 300;
+  font-style: italic;
+  color: rgba(255, 255, 255, 0.6);
+  
+  /* Prevent selection */
+  user-select: none;
+  -webkit-user-select: none;
+  pointer-events: none;
+  
+  /* Subtle text shadow for readability */
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+/* Story Content Area - Bottom */
+.story-card__content {
+  position: absolute;
+  bottom: 80px;
+  left: 0;
+  right: 0;
+  padding: 0 20px;
+  z-index: 5;
+  
+  /* Ensure text is above gradient overlay */
+  pointer-events: none;
+}
+
+/* Requirements: 13.3 - Optimize text sizes for mobile readability */
+/* Requirements: 8.4 - Ensure contrast ratio meets WCAG 2.1 AA (4.5:1) */
+.story-card__title {
+  /* Typography - Mobile optimized */
+  font-size: 1.375rem; /* 22px - better for mobile */
+  font-weight: 600;
+  line-height: 1.3;
+  color: #ffffff; /* Pure white for maximum contrast */
+  
+  /* Spacing */
+  margin: 0 0 8px 0;
+  
+  /* Enhanced text shadow for readability - ensures 4.5:1 contrast ratio */
+  /* Multiple shadows create a strong outline effect */
+  text-shadow: 
+    0 2px 8px rgba(0, 0, 0, 0.8),
+    0 1px 3px rgba(0, 0, 0, 0.9),
+    1px 1px 2px rgba(0, 0, 0, 0.7),
+    -1px -1px 2px rgba(0, 0, 0, 0.7);
+  
+  /* Prevent orphans */
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+.story-card__summary {
+  /* Typography - Mobile optimized */
+  font-size: 0.9375rem; /* 15px - better for mobile readability */
+  line-height: 1.5;
+  color: #f3f4f6; /* gray-100 - lighter for better contrast */
+  
+  /* Spacing */
+  margin: 0;
+  
+  /* Enhanced text shadow for readability - ensures 4.5:1 contrast ratio */
+  text-shadow: 
+    0 2px 6px rgba(0, 0, 0, 0.8),
+    0 1px 3px rgba(0, 0, 0, 0.9),
+    1px 1px 2px rgba(0, 0, 0, 0.7);
+  
+  /* Limit to 3 lines */
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Audio Controls - Bottom Left */
+/* Requirements: 13.5 - Touch-friendly button sizes (44px × 44px minimum) */
+/* Requirements: 8.4 - Ensure contrast ratio meets WCAG 2.1 AA (4.5:1) */
+.story-card__audio-button {
+  position: absolute;
+  bottom: 24px;
+  left: 24px;
+  z-index: 10;
+  
+  /* Layout */
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  
+  /* Touch-friendly minimum size - Requirements: 13.5 */
+  min-width: 44px;
+  min-height: 44px;
+  
+  /* Enhanced frosted glass effect with better contrast */
+  background: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  
+  /* Visual styling with enhanced border for better contrast */
+  border: 1.5px solid rgba(255, 255, 255, 0.4);
+  border-radius: 24px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  
+  /* Typography - Requirements: 13.3 - Optimized for mobile readability */
+  /* Pure white for maximum contrast against semi-transparent background */
+  color: #ffffff;
+  font-size: 0.875rem;
+  font-weight: 600; /* Increased weight for better readability */
+  
+  /* Reset button styles */
+  cursor: pointer;
+  outline: none;
+  
+  /* Smooth transitions */
+  transition: all 0.2s ease;
+}
+
+.story-card__audio-button:hover {
+  background: rgba(255, 255, 255, 0.35);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: scale(1.05);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.5);
+}
+
+.story-card__audio-button:active {
+  transform: scale(0.98);
+}
+
+.story-card__audio-button:focus-visible {
+  outline: 2px solid white;
+  outline-offset: 2px;
+}
+
+/* Audio Playing State */
+.story-card__audio-button--playing {
+  background: rgba(59, 130, 246, 0.3); /* blue-500 with opacity */
+  border-color: rgba(59, 130, 246, 0.5);
+  animation: pulse-audio 2s ease-in-out infinite;
+}
+
+.story-card__audio-button--playing:hover {
+  background: rgba(59, 130, 246, 0.4);
+}
+
+@keyframes pulse-audio {
+  0%, 100% {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3), 0 0 0 0 rgba(59, 130, 246, 0.7);
+  }
+  50% {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3), 0 0 0 8px rgba(59, 130, 246, 0);
+  }
+}
+
+.story-card__audio-text {
+  white-space: nowrap;
+  /* Enhanced text shadow for better contrast */
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+/* Navigation Dots - Bottom Right */
+.story-card__navigation-dots {
+  position: absolute;
+  bottom: 32px;
+  right: 24px;
+  z-index: 10;
+  
+  /* Layout */
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.story-card__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.4);
+  transition: all 0.3s ease;
+  
+  /* Accessibility */
+  cursor: default;
+}
+
+.story-card__dot--active {
+  width: 24px;
+  border-radius: 4px;
+  background: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Small Mobile Optimizations */
+@media (max-width: 380px) {
+  .story-card__watermark {
+    top: 12px;
+    right: 12px;
+    font-size: 0.75rem;
+  }
+  
+  .story-card__content {
+    bottom: 70px;
+    padding: 0 16px;
+  }
+  
+  .story-card__title {
+    font-size: 1.25rem; /* 20px */
+  }
+  
+  .story-card__summary {
+    font-size: 0.875rem; /* 14px */
+  }
+  
+  .story-card__audio-button {
+    bottom: 20px;
+    left: 16px;
+    padding: 10px 14px;
+    font-size: 0.8125rem;
+    /* Maintain minimum touch target */
+    min-width: 44px;
+    min-height: 44px;
+  }
+  
+  .story-card__navigation-dots {
+    bottom: 28px;
+    right: 16px;
+    gap: 6px;
+  }
+  
+  .story-card__dot {
+    width: 6px;
+    height: 6px;
+  }
+  
+  .story-card__dot--active {
+    width: 20px;
+  }
+}
+
+/* Desktop: Larger text for better readability on bigger screens */
+@media (min-width: 768px) {
+  .story-card__content {
+    padding: 0 24px;
+  }
+  
+  .story-card__title {
+    font-size: 1.5rem; /* 24px */
+  }
+  
+  .story-card__summary {
+    font-size: 0.875rem; /* 14px */
+  }
+}
+
+/* Touch Target Accessibility - Requirements: 13.5 */
+/* Ensure all interactive elements meet 44px minimum on touch devices */
+@media (pointer: coarse) {
+  .story-card__audio-button {
+    /* Ensure minimum 44px touch target */
+    min-width: 44px;
+    min-height: 44px;
+  }
+  
+  /* Increase tap area for navigation dots */
+  .story-card__dot {
+    width: 10px;
+    height: 10px;
+  }
+  
+  .story-card__dot--active {
+    width: 28px;
+  }
+}
+
+/* High Contrast Mode */
+@media (prefers-contrast: high) {
+  .story-card__title,
+  .story-card__summary {
+    text-shadow: 0 0 8px rgba(0, 0, 0, 1);
+  }
+  
+  .story-card__audio-button {
+    border: 2px solid white;
+    background: rgba(0, 0, 0, 0.8);
+  }
+  
+  .story-card__dot {
+    border: 1px solid white;
+  }
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  .story-card__audio-button,
+  .story-card__dot {
+    transition: none;
+  }
+  
+  .story-card__audio-button:hover {
+    transform: none;
+  }
+  
+  .story-card__audio-button:active {
+    transform: none;
+  }
+  
+  .story-card__audio-button--playing {
+    animation: none;
+  }
+}
+
+/* Desktop: Centered Card with Border Radius and Shadow */
+/* Requirements: 13.1, 13.2, 13.4 - Desktop adaptation */
+@media (min-width: 768px) {
+  .story-card {
+    /* Requirement 13.2 - Border-radius */
+    border-radius: 16px;
+    /* Requirement 13.4 - Box-shadow */
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  }
+  
+  /* Clip background media to card border radius */
+  .story-card .background-media {
+    border-radius: 16px;
+  }
+}
+
+/* Print Styles */
+@media print {
+  .story-card__audio-button,
+  .story-card__navigation-dots,
+  .story-card__watermark {
+    display: none;
+  }
+  
+  .story-card__content {
+    position: static;
+    padding: 20px;
+  }
+  
+  .story-card__title,
+  .story-card__summary {
+    color: black;
+    text-shadow: none;
+  }
+}

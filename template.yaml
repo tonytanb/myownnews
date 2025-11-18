@@ -18,7 +18,7 @@ Parameters:
     Description: News categories for content curation
   VoiceId:
     Type: String
-    Default: Joanna
+    Default: Matthew
     Description: Amazon Polly voice ID (Joanna, Matthew, Amy, Emma, etc.)
   VoiceProvider:
     Type: String
@@ -28,6 +28,10 @@ Parameters:
     Type: Number
     Default: 8
     Description: Maximum articles to process per generation
+  CloudWatchMetricsNamespace:
+    Type: String
+    Default: "CurioNews/BedrockAgents"
+    Description: CloudWatch custom metrics namespace for Bedrock agent tracking
 
 Globals:
   Function:
@@ -112,8 +116,9 @@ Resources:
       CorsConfiguration:
         CorsRules:
           - AllowedHeaders: ['*']
-            AllowedMethods: [GET]
+            AllowedMethods: [GET, HEAD]
             AllowedOrigins: ['*']
+            ExposedHeaders: ['ETag', 'Content-Length', 'Content-Type']
             MaxAge: 3600
       LifecycleConfiguration:
         Rules:
@@ -189,36 +194,12 @@ Resources:
             Name: MyOwnNewsEvening
             Enabled: true
 
-  # API: bootstrap endpoint for smart caching
-  BootstrapFunction:
+  # API: CONSOLIDATED MAIN FUNCTION - handles all API endpoints
+  CurioNewsMainFunction:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: api/
-      Handler: handlers.bootstrap
-      Environment:
-        Variables:
-          BUCKET: !Ref AssetsBucket
-          CURIO_TABLE: !Ref CurioTable
-          CORS_ALLOW_ORIGIN: "*"
-      Policies:
-        - DynamoDBCrudPolicy:
-            TableName: !Ref CurioTable
-        - S3ReadPolicy:
-            BucketName: !Ref AssetsBucket
-      Events:
-        Api:
-          Type: Api
-          Properties:
-            RestApiId: !Ref NewsApi
-            Path: /bootstrap
-            Method: GET
-
-  # API: generate fresh content with real agents
-  GenerateFreshFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      CodeUri: api/
-      Handler: handlers.generate_fresh
+      Handler: main_handler.lambda_handler
       Timeout: 180
       MemorySize: 1024
       Environment:
@@ -229,6 +210,24 @@ Resources:
           NEWS_API_KEY: !Ref NewsApiKey
           MODEL_ID: !Ref ModelId
           VOICE_ID: !Ref VoiceId
+          NEWS_CATEGORIES: !Ref NewsCategories
+          VOICE_PROVIDER: !Ref VoiceProvider
+          MAX_ARTICLES: !Ref MaxArticles
+          PRESIGN_EXPIRES: 600
+          # Enable Bedrock Multi-Agent Orchestration
+          USE_BEDROCK_AGENTS: "false"
+          ENABLE_MULTI_AGENT: "true"
+          # Bedrock Agent IDs - loaded from Parameter Store at runtime
+          # These are fallback values; the orchestrator will load from SSM if not set
+          BEDROCK_AGENT_CONTENT_CURATOR_ID: ""
+          BEDROCK_AGENT_SOCIAL_IMPACT_ANALYZER_ID: ""
+          BEDROCK_AGENT_STORY_SELECTOR_ID: ""
+          BEDROCK_AGENT_SCRIPT_WRITER_ID: ""
+          BEDROCK_AGENT_ENTERTAINMENT_CURATOR_ID: ""
+          BEDROCK_AGENT_MEDIA_ENHANCER_ID: ""
+          # CloudWatch Metrics Configuration
+          CLOUDWATCH_METRICS_NAMESPACE: !Ref CloudWatchMetricsNamespace
+          ENABLE_AGENT_METRICS: "true"
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref CurioTable
@@ -241,340 +240,147 @@ Resources:
                 - bedrock:InvokeModel
                 - bedrock:InvokeModelWithResponseStream
               Resource: "*"
+            - Sid: AllowBedrockAgents
+              Effect: Allow
+              Action:
+                - bedrock-agent-runtime:InvokeAgent
+                - bedrock-agent:GetAgent
+                - bedrock-agent:ListAgents
+                - bedrock-agent:GetAgentAlias
+                - bedrock-agent:ListAgentAliases
+              Resource: "*"
+            - Sid: AllowSSMParameterAccess
+              Effect: Allow
+              Action:
+                - ssm:GetParameter
+                - ssm:GetParameters
+                - ssm:GetParametersByPath
+              Resource: 
+                - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/curio-news/bedrock-agents/*"
             - Sid: AllowPolly
               Effect: Allow
               Action:
                 - polly:SynthesizeSpeech
               Resource: "*"
-      Events:
-        Api:
-          Type: Api
-          Properties:
-            RestApiId: !Ref NewsApi
-            Path: /generate-fresh
-            Method: POST
-
-  # API: get agent generation status
-  AgentStatusFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      CodeUri: api/
-      Handler: handlers.agent_status
-      Environment:
-        Variables:
-          CURIO_TABLE: !Ref CurioTable
-          CORS_ALLOW_ORIGIN: "*"
-      Policies:
-        - DynamoDBReadPolicy:
-            TableName: !Ref CurioTable
-      Events:
-        Api:
-          Type: Api
-          Properties:
-            RestApiId: !Ref NewsApi
-            Path: /agent-status
-            Method: GET
-
-  # API: list latest audio/scripts with presigned URLs
-  ListLatestFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      CodeUri: api/
-      Handler: handlers.list_latest
-      Environment:
-        Variables:
-          BUCKET: !Ref AssetsBucket
-          CORS_ALLOW_ORIGIN: "*"
-          PRESIGN_EXPIRES: 1200  # 20 minutes
-      Policies:
-        - S3ReadPolicy:
-            BucketName: !Ref AssetsBucket
-      Events:
-        ApiLatest:
-          Type: Api
-          Properties:
-            RestApiId: !Ref NewsApi
-            Path: /latest
-            Method: GET
-
-  # API: Agent Performance Dashboard
-  AgentPerformanceDashboardFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      CodeUri: api/
-      Handler: handlers.agent_performance_dashboard
-      Environment:
-        Variables:
-          BUCKET: !Ref AssetsBucket
-          CURIO_TABLE: !Ref CurioTable
-          CORS_ALLOW_ORIGIN: "*"
-      Policies:
-        - DynamoDBReadPolicy:
-            TableName: !Ref CurioTable
-        - Statement:
             - Sid: AllowCloudWatchMetrics
               Effect: Allow
               Action:
                 - cloudwatch:GetMetricStatistics
                 - cloudwatch:ListMetrics
-                - logs:DescribeLogGroups
-                - logs:DescribeLogStreams
-              Resource: "*"
-      Events:
-        Api:
-          Type: Api
-          Properties:
-            RestApiId: !Ref NewsApi
-            Path: /monitoring/dashboard
-            Method: GET
-
-  # API: Agent Debugging Information
-  AgentDebuggingInfoFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      CodeUri: api/
-      Handler: handlers.agent_debugging_info
-      Environment:
-        Variables:
-          BUCKET: !Ref AssetsBucket
-          CURIO_TABLE: !Ref CurioTable
-          CORS_ALLOW_ORIGIN: "*"
-      Policies:
-        - DynamoDBReadPolicy:
-            TableName: !Ref CurioTable
-      Events:
-        Api:
-          Type: Api
-          Properties:
-            RestApiId: !Ref NewsApi
-            Path: /monitoring/debug/{run_id}
-            Method: GET
-
-  # API: Real-time Metrics
-  RealTimeMetricsFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      CodeUri: api/
-      Handler: handlers.real_time_metrics
-      Environment:
-        Variables:
-          BUCKET: !Ref AssetsBucket
-          CURIO_TABLE: !Ref CurioTable
-          CORS_ALLOW_ORIGIN: "*"
-      Policies:
-        - DynamoDBReadPolicy:
-            TableName: !Ref CurioTable
-      Events:
-        Api:
-          Type: Api
-          Properties:
-            RestApiId: !Ref NewsApi
-            Path: /monitoring/metrics/{run_id}
-            Method: GET
-
-  # API: Setup Monitoring and Alerts
-  SetupMonitoringFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      CodeUri: api/
-      Handler: handlers.setup_monitoring
-      Environment:
-        Variables:
-          BUCKET: !Ref AssetsBucket
-          CURIO_TABLE: !Ref CurioTable
-          CORS_ALLOW_ORIGIN: "*"
-      Policies:
-        - DynamoDBCrudPolicy:
-            TableName: !Ref CurioTable
-        - Statement:
-            - Sid: AllowCloudWatchAlarms
-              Effect: Allow
-              Action:
                 - cloudwatch:PutMetricAlarm
                 - cloudwatch:PutMetricData
+                - cloudwatch:DescribeAlarms
                 - logs:CreateLogGroup
                 - logs:CreateLogStream
                 - logs:PutLogEvents
-              Resource: "*"
-      Events:
-        Api:
-          Type: Api
-          Properties:
-            RestApiId: !Ref NewsApi
-            Path: /monitoring/setup
-            Method: POST
-
-  # API: Debugging Dashboard Analysis
-  DebuggingDashboardAnalysisFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      CodeUri: api/
-      Handler: handlers.debugging_dashboard_analysis
-      Timeout: 60
-      MemorySize: 512
-      Environment:
-        Variables:
-          BUCKET: !Ref AssetsBucket
-          CURIO_TABLE: !Ref CurioTable
-          CORS_ALLOW_ORIGIN: "*"
-      Policies:
-        - DynamoDBReadPolicy:
-            TableName: !Ref CurioTable
-        - Statement:
-            - Sid: AllowCloudWatchMetrics
-              Effect: Allow
-              Action:
-                - cloudwatch:GetMetricStatistics
-                - cloudwatch:ListMetrics
-                - cloudwatch:DescribeAlarms
                 - logs:DescribeLogGroups
                 - logs:DescribeLogStreams
                 - logs:FilterLogEvents
               Resource: "*"
       Events:
-        Api:
+        # Core API endpoints
+        BootstrapApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref NewsApi
+            Path: /bootstrap
+            Method: GET
+        GenerateFreshApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref NewsApi
+            Path: /generate-fresh
+            Method: POST
+        LatestApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref NewsApi
+            Path: /latest
+            Method: GET
+        # Agent status endpoint
+        AgentStatusApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref NewsApi
+            Path: /agent-status
+            Method: GET
+        # Monitoring endpoints
+        MonitoringDashboardApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref NewsApi
+            Path: /monitoring/dashboard
+            Method: GET
+        MonitoringDebugApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref NewsApi
+            Path: /monitoring/debug/{run_id}
+            Method: GET
+        MonitoringMetricsApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref NewsApi
+            Path: /monitoring/metrics/{run_id}
+            Method: GET
+        MonitoringSetupApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref NewsApi
+            Path: /monitoring/setup
+            Method: POST
+        # Debugging endpoints
+        DebuggingAnalysisApi:
           Type: Api
           Properties:
             RestApiId: !Ref NewsApi
             Path: /debugging/analysis
             Method: GET
-
-  # API: Debugging Dashboard Real-time
-  DebuggingDashboardRealtimeFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      CodeUri: api/
-      Handler: handlers.debugging_dashboard_realtime
-      Environment:
-        Variables:
-          BUCKET: !Ref AssetsBucket
-          CURIO_TABLE: !Ref CurioTable
-          CORS_ALLOW_ORIGIN: "*"
-      Policies:
-        - DynamoDBReadPolicy:
-            TableName: !Ref CurioTable
-        - Statement:
-            - Sid: AllowCloudWatchMetrics
-              Effect: Allow
-              Action:
-                - cloudwatch:GetMetricStatistics
-                - cloudwatch:DescribeAlarms
-              Resource: "*"
-      Events:
-        ApiWithRunId:
+        DebuggingRealtimeWithRunIdApi:
           Type: Api
           Properties:
             RestApiId: !Ref NewsApi
             Path: /debugging/realtime/{run_id}
             Method: GET
-        ApiWithoutRunId:
+        DebuggingRealtimeApi:
           Type: Api
           Properties:
             RestApiId: !Ref NewsApi
             Path: /debugging/realtime
             Method: GET
-
-  # API: Troubleshooting Guides
-  DebuggingTroubleshootingGuideFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      CodeUri: api/
-      Handler: handlers.debugging_troubleshooting_guide
-      Environment:
-        Variables:
-          BUCKET: !Ref AssetsBucket
-          CURIO_TABLE: !Ref CurioTable
-          CORS_ALLOW_ORIGIN: "*"
-      Policies:
-        - DynamoDBReadPolicy:
-            TableName: !Ref CurioTable
-      Events:
-        ApiWithIssueType:
+        DebuggingTroubleshootingWithTypeApi:
           Type: Api
           Properties:
             RestApiId: !Ref NewsApi
             Path: /debugging/troubleshooting/{issue_type}
             Method: GET
-        ApiAllGuides:
+        DebuggingTroubleshootingApi:
           Type: Api
           Properties:
             RestApiId: !Ref NewsApi
             Path: /debugging/troubleshooting
             Method: GET
-
-  # API: Performance Visualization
-  DebuggingPerformanceVisualizationFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      CodeUri: api/
-      Handler: handlers.debugging_performance_visualization
-      Timeout: 60
-      MemorySize: 512
-      Environment:
-        Variables:
-          BUCKET: !Ref AssetsBucket
-          CURIO_TABLE: !Ref CurioTable
-          CORS_ALLOW_ORIGIN: "*"
-      Policies:
-        - DynamoDBReadPolicy:
-            TableName: !Ref CurioTable
-        - Statement:
-            - Sid: AllowCloudWatchMetrics
-              Effect: Allow
-              Action:
-                - cloudwatch:GetMetricStatistics
-                - cloudwatch:ListMetrics
-              Resource: "*"
-      Events:
-        Api:
+        DebuggingVisualizationApi:
           Type: Api
           Properties:
             RestApiId: !Ref NewsApi
             Path: /debugging/visualization
             Method: GET
-
-  # API: sign a given key (optional helper)
-  SignKeyFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      CodeUri: api/
-      Handler: handlers.sign_key
-      Environment:
-        Variables:
-          BUCKET: !Ref AssetsBucket
-          CORS_ALLOW_ORIGIN: "*"
-          PRESIGN_EXPIRES: 600
-      Policies:
-        - S3ReadPolicy:
-            BucketName: !Ref AssetsBucket
-      Events:
-        ApiSign:
+        # Utility endpoints
+        SignApi:
           Type: Api
           Properties:
             RestApiId: !Ref NewsApi
             Path: /sign
             Method: GET
-
-  # API: trace endpoint for agent provenance
-  TraceFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      CodeUri: api/
-      Handler: handlers.trace
-      Environment:
-        Variables:
-          CURIO_TABLE: !Ref CurioTable
-          CORS_ALLOW_ORIGIN: "*"
-      Policies:
-        - DynamoDBReadPolicy:
-            TableName: !Ref CurioTable
-      Events:
-        ApiTrace:
+        TraceApi:
           Type: Api
           Properties:
             RestApiId: !Ref NewsApi
             Path: /trace/{traceId+}
             Method: GET
+
+
 
 Outputs:
   BucketName:

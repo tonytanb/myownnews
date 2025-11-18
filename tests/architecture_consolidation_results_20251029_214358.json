@@ -1,0 +1,59 @@
+{
+  "overall_success": false,
+  "critical_success": false,
+  "success_rate": 33.33333333333333,
+  "total_tests": 6,
+  "passed_tests": 2,
+  "test_results": [
+    {
+      "test": "Bootstrap Endpoint",
+      "success": false,
+      "message": "Too few news items: 0",
+      "timestamp": "2025-10-29T21:43:57.118626",
+      "data": null
+    },
+    {
+      "test": "Content Generation",
+      "success": false,
+      "message": "Generated content missing script or news_items",
+      "timestamp": "2025-10-29T21:43:58.067643",
+      "data": null
+    },
+    {
+      "test": "Latest Endpoint",
+      "success": false,
+      "message": "Missing script or news_items",
+      "timestamp": "2025-10-29T21:43:58.374672",
+      "data": null
+    },
+    {
+      "test": "Audio URL Accessibility",
+      "success": false,
+      "message": "No audioUrl in bootstrap response",
+      "timestamp": "2025-10-29T21:43:58.715507",
+      "data": null
+    },
+    {
+      "test": "CORS Headers",
+      "success": true,
+      "message": "All CORS headers present",
+      "timestamp": "2025-10-29T21:43:58.788238",
+      "data": null
+    },
+    {
+      "test": "Error Handling",
+      "success": true,
+      "message": "Proper HTTP error code: 403",
+      "timestamp": "2025-10-29T21:43:58.860985",
+      "data": null
+    }
+  ],
+  "critical_systems": {
+    "bootstrap_endpoint": false,
+    "content_generation": false,
+    "audio_accessibility": false,
+    "latest_endpoint": false,
+    "cors_headers": true,
+    "error_handling": true
+  }
+}

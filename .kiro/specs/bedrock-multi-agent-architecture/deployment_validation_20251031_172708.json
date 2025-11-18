@@ -1,0 +1,140 @@
+{
+  "timestamp": "2025-10-31T17:26:55.769644",
+  "agent_creation": {
+    "success": true,
+    "agents_created": 7,
+    "agents_failed": 0,
+    "details": [
+      {
+        "name": "curio-news-content-curator",
+        "id": "6VJN9XM4SY",
+        "status": "PREPARED"
+      },
+      {
+        "name": "curio-news-entertainment-curator",
+        "id": "RBBXHCQVEU",
+        "status": "PREPARED"
+      },
+      {
+        "name": "curio-news-media-enhancer",
+        "id": "P1TDHXFWZZ",
+        "status": "PREPARED"
+      },
+      {
+        "name": "curio-news-script-writer",
+        "id": "UI4HRSN9H0",
+        "status": "PREPARED"
+      },
+      {
+        "name": "curio-news-social-impact-analyzer",
+        "id": "CO5NL9YLGM",
+        "status": "PREPARED"
+      },
+      {
+        "name": "curio-news-story-selector",
+        "id": "L6N7ZOIIVZ",
+        "status": "PREPARED"
+      },
+      {
+        "name": "curio-news-test-agent",
+        "id": "YFSQK9VMWA",
+        "status": "PREPARED"
+      }
+    ]
+  },
+  "agent_verification": {
+    "agents_found": 6,
+    "agents_missing": [],
+    "agent_details": [
+      {
+        "name": "curio-news-content-curator",
+        "id": "6VJN9XM4SY",
+        "status": "PREPARED",
+        "updated": "2025-10-31T15:31:35.024033+00:00"
+      },
+      {
+        "name": "curio-news-entertainment-curator",
+        "id": "RBBXHCQVEU",
+        "status": "PREPARED",
+        "updated": "2025-10-31T15:31:54.283550+00:00"
+      },
+      {
+        "name": "curio-news-media-enhancer",
+        "id": "P1TDHXFWZZ",
+        "status": "PREPARED",
+        "updated": "2025-10-31T15:31:59.427533+00:00"
+      },
+      {
+        "name": "curio-news-script-writer",
+        "id": "UI4HRSN9H0",
+        "status": "PREPARED",
+        "updated": "2025-10-31T15:31:49.697990+00:00"
+      },
+      {
+        "name": "curio-news-social-impact-analyzer",
+        "id": "CO5NL9YLGM",
+        "status": "PREPARED",
+        "updated": "2025-10-31T15:31:40.332922+00:00"
+      },
+      {
+        "name": "curio-news-story-selector",
+        "id": "L6N7ZOIIVZ",
+        "status": "PREPARED",
+        "updated": "2025-10-31T15:31:44.798116+00:00"
+      }
+    ]
+  },
+  "lambda_deployment": {
+    "success": true,
+    "stack_status": "UPDATE_COMPLETE",
+    "lambda_updated": true,
+    "stack_name": "myownnews-mvp",
+    "region": "us-west-2"
+  },
+  "e2e_testing": {
+    "success": false,
+    "execution_time": 0.27,
+    "agents_invoked": 0,
+    "agents_succeeded": 0,
+    "agents_failed": 0,
+    "response_data": {},
+    "error": "HTTP 403: {\"message\":\"Missing Authentication Token\"}"
+  },
+  "frontend_validation": {
+    "success": true,
+    "ui_components_present": true,
+    "agent_trace_visible": true,
+    "real_time_updates": true
+  },
+  "performance_metrics": {
+    "target_met": false,
+    "average_time": 0,
+    "min_time": 0,
+    "max_time": 0,
+    "test_runs": 0,
+    "execution_times": []
+  },
+  "demo_scenarios": {
+    "success": false,
+    "scenarios_tested": 3,
+    "scenarios_passed": 0,
+    "scenarios": [
+      {
+        "name": "Technology Focus",
+        "success": false,
+        "execution_time": 0.13
+      },
+      {
+        "name": "Social Impact Focus",
+        "success": false,
+        "execution_time": 0.27
+      },
+      {
+        "name": "Entertainment Focus",
+        "success": false,
+        "execution_time": 0.2
+      }
+    ]
+  },
+  "overall_status": "partial"
+}

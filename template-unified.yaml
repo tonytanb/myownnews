@@ -1,0 +1,70 @@
+# Updated SAM Template for Unified Main Handler
+# Replace the existing Lambda functions with this unified configuration
+
+  # UNIFIED API HANDLER - Replaces BootstrapFunction, GenerateFreshFunction, and ListLatestFunction
+  UnifiedApiFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: api/
+      Handler: main_handler.lambda_handler  # Our new unified handler
+      Timeout: 180
+      MemorySize: 1024
+      Environment:
+        Variables:
+          BUCKET: !Ref AssetsBucket
+          CURIO_TABLE: !Ref CurioTable
+          CORS_ALLOW_ORIGIN: "*"
+          NEWS_API_KEY: !Ref NewsApiKey
+          MODEL_ID: !Ref ModelId
+          VOICE_ID: !Ref VoiceId
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref CurioTable
+        - S3CrudPolicy:
+            BucketName: !Ref AssetsBucket
+        - Statement:
+            - Sid: AllowBedrockInvoke
+              Effect: Allow
+              Action:
+                - bedrock:InvokeModel
+                - bedrock:InvokeModelWithResponseStream
+              Resource: "*"
+            - Sid: AllowPolly
+              Effect: Allow
+              Action:
+                - polly:SynthesizeSpeech
+              Resource: "*"
+            - Sid: AllowCloudWatchLogs
+              Effect: Allow
+              Action:
+                - logs:CreateLogGroup
+                - logs:CreateLogStream
+                - logs:PutLogEvents
+              Resource: "*"
+      Events:
+        # Bootstrap endpoint
+        BootstrapApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref NewsApi
+            Path: /bootstrap
+            Method: GET
+        # Generate fresh endpoint
+        GenerateFreshApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref NewsApi
+            Path: /generate-fresh
+            Method: POST
+        # Latest endpoint
+        LatestApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref NewsApi
+            Path: /latest
+            Method: GET
+
+# Remove these old functions from your template:
+# - BootstrapFunction
+# - GenerateFreshFunction  
+# - ListLatestFunction
